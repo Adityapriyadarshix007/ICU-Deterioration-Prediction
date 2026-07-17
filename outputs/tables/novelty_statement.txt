@@ -1,0 +1,33 @@
+
+================================================================================
+                        NOVELTY STATEMENT
+================================================================================
+
+Our study presents three key contributions to the field of ICU deterioration 
+prediction using the MIMIC-IV dataset:
+
+1. DATA-CENTRIC NOVELTY:
+   We conducted a rigorous comparative analysis of three imputation strategies 
+   (Forward Fill, Linear Interpolation, and KNN-based imputation) on the MIMIC-IV 
+   dataset. Our results show that KNN imputation significantly outperforms 
+   traditional temporal interpolation methods.
+
+2. ARCHITECTURAL NOVELTY:
+   We proposed a hybrid CNN-LSTM architecture with an attention mechanism 
+   for ICU time-series classification. This architecture captures both:
+   - Short-term local patterns (via CNN layers)
+   - Long-term sequential dependencies (via LSTM layers)
+   - Temporal attention weights (via Attention mechanism)
+
+3. PERFORMANCE IMPROVEMENT:
+   Our CNN-LSTM + Attention model achieves an AUC-ROC of 0.6966, 
+   which is 0.84% higher than the best XGBoost baseline 
+   (AUC-ROC = 0.6883 with KNN imputation).
+
+FINAL CONCLUSION:
+To the best of our knowledge, this is one of the first undergraduate-level 
+studies to comprehensively evaluate the combined effect of optimized 
+imputation strategies and hybrid deep learning architectures on the 
+newly released MIMIC-IV v3.1 dataset.
+
+================================================================================

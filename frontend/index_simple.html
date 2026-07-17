@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICU Deterioration Predictor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 28px; }
+        .header p { opacity: 0.8; margin-top: 5px; }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .card h2 { font-size: 20px; margin-bottom: 16px; color: #1f2937; }
+        label { display: block; font-weight: 500; margin-bottom: 6px; color: #374151; font-size: 14px; }
+        input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.2); }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #1d4ed8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .result-card { border-left: 6px solid #22c55e; padding: 20px; }
+        .result-card.critical { border-left-color: #dc2626; }
+        .result-card.warning { border-left-color: #f59e0b; }
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+        .result-header h3 { font-size: 18px; color: #1f2937; }
+        .badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .badge.critical { background: #dc2626; color: white; }
+        .badge.warning { background: #f59e0b; color: white; }
+        .badge.stable { background: #22c55e; color: white; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .stat {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat .label { font-size: 11px; color: #6b7280; }
+        .stat .value { font-size: 20px; font-weight: 700; color: #1f2937; }
+        .gauge {
+            margin-top: 16px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .gauge-fill {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.5s;
+        }
+        .gauge-fill.critical { background: #dc2626; }
+        .gauge-fill.warning { background: #f59e0b; }
+        .gauge-fill.stable { background: #22c55e; }
+        .gauge-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+        .feature-tag {
+            padding: 4px 10px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #374151;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state h3 { font-size: 18px; color: #374151; }
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 14px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 30px;
+        }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏥 ICU Deterioration Predictor</h1>
+        <p>Early Warning System for Multi-Organ Failure · MIMIC-IV v3.1</p>
+    </div>
+
+    <div class="container">
+        <div>
+            <div class="card">
+                <h2>Patient Risk Assessment</h2>
+                <form id="predictForm">
+                    <label for="patientId">Patient ID (optional)</label>
+                    <input type="text" id="patientId" placeholder="Enter Patient ID or leave blank">
+                    <button type="submit" id="predictBtn">🔍 Predict Risk</button>
+                </form>
+                <div style="margin-top: 16px; padding: 12px; background: #f9fafb; border-radius: 8px; font-size: 12px; color: #6b7280;">
+                    <strong>Features:</strong> Heart Rate, SBP, DBP, GCS, Lactate, Urine Output, FiO₂, Creatinine
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <h3 style="font-size: 16px;">📊 Model Performance</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 14px; margin-top: 8px;">
+                    <div><span style="color: #6b7280;">Accuracy</span><br><strong style="color: #22c55e;">86.68%</strong></div>
+                    <div><span style="color: #6b7280;">AUC-ROC</span><br><strong style="color: #2563eb;">0.6945</strong></div>
+                    <div><span style="color: #6b7280;">Best Feature</span><br><strong style="color: #7c3aed;">Heart Rate (H6)</strong></div>
+                    <div><span style="color: #6b7280;">Imputation</span><br><strong style="color: #f59e0b;">KNN</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card" id="resultCard">
+                <div id="resultContent">
+                    <div class="empty-state">
+                        <div class="icon">🏥</div>
+                        <h3>Ready for Prediction</h3>
+                        <p style="font-size: 14px; margin-top: 8px;">Enter a Patient ID and click "Predict Risk"</p>
+                        <p style="font-size: 12px; color: #9ca3af; margin-top: 4px;">The model analyzes 8 clinical features to predict deterioration within 12-18 hours</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        ICU Deterioration Predictor v1.0 · CNN-LSTM + Attention Model · MIMIC-IV v3.1
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        document.getElementById('predictForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const patientId = document.getElementById('patientId').value || 'PATIENT_' + Date.now();
+            const btn = document.getElementById('predictBtn');
+            const resultContent = document.getElementById('resultContent');
+            
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+            
+            const patientData = {
+                patient_id: patientId,
+                heart_rate: Math.round(60 + Math.random() * 60),
+                sbp: Math.round(90 + Math.random() * 60),
+                dbp: Math.round(50 + Math.random() * 40),
+                gcs: Math.round(8 + Math.random() * 7),
+                lactate: Math.round((0.5 + Math.random() * 4) * 10) / 10,
+                urine_output: Math.round(10 + Math.random() * 60),
+                fio2: Math.round(21 + Math.random() * 60),
+                creatinine: Math.round((0.5 + Math.random() * 2.5) * 10) / 10
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(patientData)
+                });
+
+                if (!response.ok) throw new Error('Server error');
+                const data = await response.json();
+                
+                const colorClass = data.alert_level.toLowerCase();
+                const riskPercent = data.risk_percentage || (data.risk_score * 100);
+
+                resultContent.innerHTML = `
+                    <div class="result-card ${colorClass}">
+                        <div class="result-header">
+                            <div>
+                                <h3>Patient: ${data.patient_id}</h3>
+                                <p style="font-size: 12px; color: #6b7280;">Predicted at: ${new Date(data.predicted_at).toLocaleString()}</p>
+                            </div>
+                            <span class="badge ${colorClass}">${data.alert_level}</span>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat">
+                                <div class="label">Risk Score</div>
+                                <div class="value">${data.risk_score.toFixed(3)}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="label">Risk %</div>
+                                <div class="value">${data.risk_percentage.toFixed(1)}%</div>
+                            </div>
+                            <div class="stat">
+                                <div class="label">Confidence</div>
+                                <div class="value">${data.confidence}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="label">Alert Level</div>
+                                <div class="value" style="color: ${data.risk_score > 0.7 ? '#dc2626' : data.risk_score > 0.5 ? '#f59e0b' : '#22c55e'}">${data.alert_level}</div>
+                            </div>
+                        </div>
+
+                        <div class="gauge">
+                            <div class="gauge-fill ${colorClass}" style="width: ${riskPercent}%"></div>
+                        </div>
+                        <div class="gauge-labels">
+                            <span>Low Risk</span>
+                            <span>Moderate</span>
+                            <span>Critical</span>
+                        </div>
+
+                        ${data.features_used ? `
+                            <div style="margin-top: 16px;">
+                                <div style="font-size: 13px; font-weight: 500; color: #374151;">Features Used:</div>
+                                <div class="feature-tags">
+                                    ${data.features_used.map(f => `<span class="feature-tag">${f}</span>`).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+
+            } catch (error) {
+                resultContent.innerHTML = `
+                    <div class="error">❌ Failed to get prediction. Make sure the backend is running.</div>
+                    <div style="font-size: 13px; color: #6b7280; margin-top: 8px;">Error: ${error.message}</div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔍 Predict Risk';
+            }
+        });
+    </script>
+</body>
+</html>

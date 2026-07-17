@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================
+   Global
+=========================== */
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+
+  background:#f4f8fc;
+
+  color:#1e293b;
+
+  min-height:100vh;
+
+  line-height:1.6;
+
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar{
+  width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+  background:#cbd5e1;
+  border-radius:50px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+  background:#94a3b8;
+}
+
+::selection{
+  background:#2563eb;
+  color:white;
+}
+
+
+/* ===========================
+   Components
+=========================== */
+
+@layer components{
+
+.card{
+
+@apply bg-white rounded-2xl shadow-card
+border border-gray-100
+p-6
+transition-all
+duration-300
+hover:-translate-y-1
+hover:shadow-xl;
+
+}
+
+.card-glass{
+
+@apply bg-white/60
+backdrop-blur-xl
+border
+border-white/40
+rounded-2xl
+shadow-card;
+
+}
+
+.btn-primary{
+
+@apply
+bg-primary-600
+text-white
+font-semibold
+px-5
+py-3
+rounded-xl
+transition-all
+duration-300
+hover:bg-primary-700
+hover:shadow-lg
+hover:scale-105
+active:scale-95;
+
+}
+
+.btn-secondary{
+
+@apply
+bg-white
+border
+border-gray-300
+text-gray-700
+font-medium
+px-5
+py-3
+rounded-xl
+hover:bg-gray-100
+transition;
+
+}
+
+.btn-danger{
+
+@apply
+bg-red-600
+text-white
+rounded-xl
+px-5
+py-3
+hover:bg-red-700
+transition;
+
+}
+
+.input-field{
+
+@apply
+w-full
+rounded-xl
+border
+border-gray-300
+bg-white
+px-4
+py-3
+transition
+duration-300
+focus:ring-4
+focus:ring-primary-200
+focus:border-primary-500
+outline-none;
+
+}
+
+.badge{
+
+@apply
+inline-flex
+items-center
+rounded-full
+px-3
+py-1
+text-sm
+font-semibold;
+
+}
+
+.badge-success{
+
+@apply bg-green-100 text-green-700;
+
+}
+
+.badge-danger{
+
+@apply bg-red-100 text-red-700;
+
+}
+
+.badge-warning{
+
+@apply bg-yellow-100 text-yellow-700;
+
+}
+
+.section-title{
+
+@apply
+text-3xl
+font-bold
+text-slate-800;
+
+}
+
+.page{
+
+@apply
+max-w-7xl
+mx-auto
+px-6
+py-8;
+
+}
+
+.table-container{
+
+@apply
+overflow-hidden
+rounded-2xl
+shadow-card
+bg-white;
+
+}
+
+.table-head{
+
+@apply
+bg-slate-100
+font-semibold;
+
+}
+
+.icon-btn{
+
+@apply
+h-10
+w-10
+rounded-full
+flex
+items-center
+justify-center
+hover:bg-slate-100
+transition;
+
+}
+
+}

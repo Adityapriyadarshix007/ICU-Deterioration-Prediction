@@ -1,0 +1,80 @@
+"""
+TRIPOD-AI Checklist for Submission
+"""
+
+tripod = """
+TRIPOD-AI Checklist
+====================
+
+Title and Abstract
+------------------
+☑ Title: "Early Prediction of ICU Deterioration Using CatBoost with SHAP Explainability on MIMIC-IV"
+☑ Abstract: Structured summary with objective, methods, results, and conclusion
+
+Introduction
+------------
+☑ 1. Clinical problem and significance
+☑ 2. Current limitations and prediction gaps
+☑ 3. Study objectives and hypotheses
+
+Methods
+-------
+☑ 4. Study design and setting (MIMIC-IV retrospective cohort)
+☑ 5. Data source and eligibility criteria
+☑ 6. Outcome definition (SOFA increase ≥2 at 18 hours)
+☑ 7. Predictors (15 SHAP-selected features)
+☑ 8. Sample size (57,515 ICU stays)
+☑ 9. Missing data handling (Median imputation)
+☑ 10. Model development (CatBoost, XGBoost, LightGBM, LSTM)
+☑ 11. Model evaluation (5-fold CV, hold-out test)
+☑ 12. Performance metrics (AUC-ROC, PR-AUC, Brier, calibration, DCA)
+☑ 13. Statistical analysis (Bootstrap CIs, DeLong test)
+
+Results
+-------
+☑ 14. Participant characteristics
+☑ 15. Model performance (AUC 0.7013, PR-AUC 0.2534)
+☑ 16. Calibration (Brier 0.2049, calibration curve)
+☑ 17. Feature importance (SHAP)
+☑ 18. Subgroup analysis
+☑ 19. Error analysis
+☑ 20. Clinical comparison (qSOFA, NEWS2, MEWS)
+
+Discussion
+----------
+☑ 21. Interpretation of findings
+☑ 22. Comparison with prior work
+☑ 23. Clinical implications
+☑ 24. Limitations (single-center, retrospective, no external validation)
+☑ 25. Generalizability
+☑ 26. Future work
+
+Other Information
+-----------------
+☑ 27. Funding (None)
+☑ 28. Conflict of interest (None)
+☑ 29. Code availability (GitHub)
+☑ 30. Data availability (MIMIC-IV)
+
+============================================================
+Supplements
+============================================================
+☑ Cohort flow diagram
+☑ ROC and PR curves
+☑ Calibration plot
+☑ SHAP summary and dependence plots
+☑ Decision Curve Analysis
+☑ Subgroup analysis tables
+☑ Hyperparameter table
+☑ Runtime analysis
+☑ Reproducibility scripts
+
+============================================================
+"""
+
+print(tripod)
+
+with open('publication/tripod_checklist.txt', 'w') as f:
+    f.write(tripod)
+
+print("✅ TRIPOD-AI checklist saved: publication/tripod_checklist.txt")

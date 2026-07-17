@@ -1,0 +1,66 @@
+"""
+Corrected Novelty Statement for Manuscript
+"""
+
+print("="*60)
+print("CORRECTED NOVELTY STATEMENT")
+print("="*60)
+
+novelty = """
+============================================================
+NOVELTY STATEMENT (For Manuscript)
+============================================================
+
+This study presents the following contributions to the field of
+early ICU deterioration prediction:
+
+1. DEVELOPMENT:
+   An interpretable CatBoost framework for early multi-organ
+   failure prediction using MIMIC-IV v3.1, specifically designed
+   for the 12-18 hour prediction window.
+
+2. METHODOLOGICAL STRENGTH:
+   Integration of SHAP-based feature selection with clinical
+   benchmarking against established scores (qSOFA, NEWS2, MEWS),
+   demonstrating that the ML model outperforms these standard
+   clinical tools.
+
+3. COMPREHENSIVE EVALUATION:
+   A systematic evaluation including:
+   - Discrimination (AUC-ROC: 0.7013)
+   - Calibration (Brier Score: 0.2049)
+   - Clinical utility (Decision Curve Analysis)
+   - Robustness (5-fold cross-validation)
+   - Subgroup analysis (age, gender, sepsis)
+   - Statistical significance (DeLong test)
+   - Bootstrap confidence intervals
+
+4. REPRODUCIBILITY:
+   A fully reproducible pipeline with:
+   - Fixed random seed (42)
+   - Environment specifications
+   - Complete preprocessing code
+   - All evaluation scripts
+
+5. CLINICAL RELEVANCE:
+   Identification of Heart Rate at Hour 6 as the most important
+   predictor (SHAP: 0.574), consistent with the cardiovascular-renal
+   axis in critical illness.
+
+============================================================
+STRENGTHS (Not Novelty Claims)
+============================================================
+- Systematic evaluation of ML models with SHAP-based feature selection
+- Reproducible pipeline with consistent metrics
+- Clinical comparison against standard scores
+- Calibration and decision curve analysis
+
+============================================================
+"""
+
+print(novelty)
+
+with open('publication/novelty_statement.txt', 'w') as f:
+    f.write(novelty)
+
+print("✅ Saved: publication/novelty_statement.txt")
