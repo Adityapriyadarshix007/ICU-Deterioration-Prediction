@@ -1199,7 +1199,7 @@ Machine Learning | Healthcare AI | Full Stack Development
 
 GitHub: https://github.com/Adityapriyadarshix007
 
-LinkedIn: (Add your LinkedIn profile here)
+LinkedIn: https://www.linkedin.com/in/aditya-priyadarshi-026816282/
 
 ⸻
 
