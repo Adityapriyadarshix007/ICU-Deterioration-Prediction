@@ -23,12 +23,14 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
     
     # Google OAuth
-    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
+    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "470384815602-voh3j0i6bsdnupjb4s2hvlhmi3172o0g.apps.googleusercontent.com")
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
     GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/api/auth/google/callback")
     
-    # CORS
-    ALLOWED_ORIGINS: list = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173,http://localhost:8000").split(",")
+    # CORS - Updated with Vercel URL
+    ALLOWED_ORIGINS: list = os.getenv("ALLOWED_ORIGINS", 
+        "http://localhost:3000,http://localhost:5173,http://localhost:8000,https://icu-deterioration-prediction.vercel.app,https://icu-deterioration-prediction.onrender.com"
+    ).split(",")
     
     # Model
     MODEL_PATH: str = os.getenv("MODEL_PATH", "./data/models/cnn_lstm_attention_model.h5")
@@ -42,6 +44,6 @@ class Settings:
     SENDGRID_API_KEY: str = os.getenv("SENDGRID_API_KEY", "")
     
     # Frontend URL
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://icu-deterioration-prediction.vercel.app")
 
 settings = Settings()

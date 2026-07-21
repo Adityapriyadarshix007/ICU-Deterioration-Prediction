@@ -18,6 +18,7 @@ import Analytics from './pages/Admin/Analytics';
 import Settings from './pages/Admin/Settings';
 import Logs from './pages/Admin/Logs';
 import './index.css';
+import OAuthCallback from './pages/OAuthCallback';
 
 // Get Google Client ID from environment variable
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -66,6 +67,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/change-password" element={<ChangePassword />} />
                 <Route path="/" element={<Navigate to="/dashboard" />} />
+                <Route path="/oauth-callback" element={<OAuthCallback />} />
                 
                 {/* Protected Routes */}
                 <Route element={<ProtectedRoute />}>
