@@ -5,6 +5,7 @@ Admin Logs Routes
 from fastapi import APIRouter, Depends, HTTPException, status
 from datetime import datetime, timedelta
 import logging
+from bson import ObjectId
 
 from app import auth
 from app.database import Database
@@ -23,6 +24,7 @@ async def check_admin(current_user: dict):
         )
     return current_user
 
+
 @router.get("/logs")
 async def get_activity_logs(
     limit: int = 100,
@@ -34,18 +36,11 @@ async def get_activity_logs(
     db = get_db()
     
     try:
-        # Try to get logs from database
-        logs = []
-        total = 0
+        # Check if logs collection exists
+        collections = db.list_collection_names()
         
-        if "logs" in db.list_collection_names():
-            cursor = db.logs.find().sort("created_at", -1).skip(skip).limit(limit)
-            for log in cursor:
-                log["id"] = str(log["_id"])
-                log.pop("_id", None)
-                logs.append(log)
-            total = db.logs.count_documents({})
-        else:
+        if "logs" not in collections:
+            logger.warning("⚠️ Logs collection doesn't exist yet - returning mock data")
             # Return mock data if no logs collection
             logs = [
                 {
@@ -89,35 +84,97 @@ async def get_activity_logs(
                     "created_at": (datetime.utcnow() - timedelta(minutes=90)).isoformat()
                 }
             ]
-            total = len(logs)
+            return {"logs": logs, "total": len(logs)}
         
-        return {"logs": logs, "total": total}
+        # Get logs from database with user info
+        pipeline = [
+            {"$sort": {"created_at": -1}},
+            {"$skip": skip},
+            {"$limit": limit},
+            {"$lookup": {
+                "from": "users",
+                "localField": "user_id",
+                "foreignField": "_id",
+                "as": "user"
+            }},
+            {"$unwind": {"path": "$user", "preserveNullAndEmptyArrays": True}}
+        ]
+        
+        logs = list(db.logs.aggregate(pipeline))
+        total = db.logs.count_documents({})
+        
+        # Format logs for frontend
+        formatted_logs = []
+        for log in logs:
+            # Get username from either the log or the joined user
+            username = log.get("username")
+            if not username and log.get("user"):
+                username = log["user"].get("username", "System")
+            if not username:
+                username = "System"
+            
+            formatted_log = {
+                "id": str(log.get("_id")),
+                "user": username,
+                "action": log.get("action", "Unknown"),
+                "patient_id": log.get("patient_id", "N/A"),
+                "patient_name": log.get("patient_name", "N/A"),
+                "alert_level": log.get("alert_level", "INFO"),
+                "risk_score": log.get("risk_score"),
+                "created_at": log.get("created_at", datetime.utcnow()).isoformat()
+            }
+            formatted_logs.append(formatted_log)
+        
+        logger.info(f"✅ Found {len(formatted_logs)} logs from database")
+        
+        return {
+            "logs": formatted_logs,
+            "total": total
+        }
+        
     except Exception as e:
-        logger.error(f"Failed to get logs: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get logs: {str(e)}"
-        )
+        logger.error(f"❌ Logs error: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Return mock data on error
+        logs = [
+            {
+                "id": "1",
+                "user": "system",
+                "action": "Error",
+                "patient_name": "N/A",
+                "alert_level": "ERROR",
+                "created_at": datetime.utcnow().isoformat()
+            }
+        ]
+        return {"logs": logs, "total": 1}
+
 
 @router.post("/logs")
 async def create_log(
     log_data: dict,
     current_user: dict = Depends(auth.get_current_user)
 ):
-    """Create a new log entry"""
+    """Create a new log entry (admin only)"""
     await check_admin(current_user)
     db = get_db()
     
     try:
+        # Add metadata to log
         log_data["created_at"] = datetime.utcnow()
-        log_data["user"] = current_user.get("username")
+        log_data["user_id"] = str(current_user.get("_id"))
+        log_data["username"] = current_user.get("username", "System")
         
         result = db.logs.insert_one(log_data)
         log_data["id"] = str(result.inserted_id)
+        log_data.pop("_id", None)
+        
+        logger.info(f"✅ Log created: {log_data.get('action')} by {log_data.get('username')}")
         
         return log_data
     except Exception as e:
-        logger.error(f"Failed to create log: {e}")
+        logger.error(f"❌ Failed to create log: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create log: {str(e)}"
