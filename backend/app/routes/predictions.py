@@ -24,10 +24,14 @@ async def predict_public(patient_data: schemas.PatientData):
     db = get_db()
     
     logger.info(f"📊 Prediction request for: {patient_data.patient_id}")
+    logger.info(f"📊 Patient data: {patient_data.dict()}")
     
     try:
-        # Calculate risk score
-        risk_score = calculate_risk_score(patient_data)
+        # Use the ML model to make prediction
+        risk_score = ml_model.predict(patient_data)
+        
+        # Ensure risk_score is within bounds
+        risk_score = max(0.0, min(1.0, risk_score))
         
         if risk_score > 0.7:
             alert_level = "CRITICAL"
@@ -41,7 +45,7 @@ async def predict_public(patient_data: schemas.PatientData):
         
         features = ['heart_rate', 'sbp', 'dbp', 'gcs', 'lactate', 'urine_output', 'fio2', 'creatinine']
         
-        # Save to database
+        # Save prediction to database
         try:
             prediction_doc = {
                 "patient_id": patient_data.patient_id,
@@ -60,6 +64,64 @@ async def predict_public(patient_data: schemas.PatientData):
         except Exception as e:
             logger.warning(f"Could not save prediction: {e}")
         
+        # ============================================================
+        # IMPORTANT: Create or update patient record
+        # This ensures the patients collection stays in sync
+        # ============================================================
+        try:
+            # Prepare patient data
+            patient_update = {
+                "patient_id": patient_data.patient_id,
+                "patient_name": patient_data.patient_name,
+                "risk_level": alert_level,
+                "updated_at": datetime.utcnow(),
+                # Store vitals as part of patient record
+                "vitals": {
+                    "heart_rate": patient_data.heart_rate,
+                    "sbp": patient_data.sbp,
+                    "dbp": patient_data.dbp,
+                    "gcs": patient_data.gcs,
+                    "lactate": patient_data.lactate,
+                    "urine_output": patient_data.urine_output,
+                    "fio2": patient_data.fio2,
+                    "creatinine": patient_data.creatinine
+                }
+            }
+            
+            # Add optional fields if they exist
+            if hasattr(patient_data, 'age') and patient_data.age:
+                patient_update["age"] = patient_data.age
+            if hasattr(patient_data, 'gender') and patient_data.gender:
+                patient_update["gender"] = patient_data.gender
+            if hasattr(patient_data, 'room') and patient_data.room:
+                patient_update["room"] = patient_data.room
+            if hasattr(patient_data, 'diagnosis') and patient_data.diagnosis:
+                patient_update["diagnosis"] = patient_data.diagnosis
+            if hasattr(patient_data, 'status') and patient_data.status:
+                patient_update["status"] = patient_data.status
+            else:
+                patient_update["status"] = "Active"
+            
+            # Upsert patient record
+            result = db.patients.update_one(
+                {"patient_id": patient_data.patient_id},
+                {
+                    "$set": patient_update,
+                    "$setOnInsert": {
+                        "created_at": datetime.utcnow()
+                    }
+                },
+                upsert=True
+            )
+            
+            if result.upserted_id:
+                logger.info(f"✅ New patient created: {patient_data.patient_id}")
+            else:
+                logger.info(f"✅ Patient updated: {patient_data.patient_id}")
+                
+        except Exception as e:
+            logger.warning(f"Could not create/update patient: {e}")
+        
         return schemas.PredictionResponse(
             patient_id=patient_data.patient_id,
             risk_score=round(risk_score, 4),
@@ -71,59 +133,9 @@ async def predict_public(patient_data: schemas.PatientData):
         )
     except Exception as e:
         logger.error(f"Prediction error: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
-
-
-def calculate_risk_score(data: schemas.PatientData) -> float:
-    """Calculate risk score based on clinical parameters"""
-    score = 0.0
-    
-    # Heart Rate
-    if data.heart_rate > 100 or data.heart_rate < 60:
-        score += 0.15
-    elif data.heart_rate > 90:
-        score += 0.08
-    
-    # Blood Pressure
-    if data.sbp < 90:
-        score += 0.20
-    elif data.sbp < 100:
-        score += 0.10
-    
-    # GCS
-    if data.gcs < 9:
-        score += 0.25
-    elif data.gcs < 13:
-        score += 0.15
-    
-    # Lactate
-    if data.lactate > 4:
-        score += 0.25
-    elif data.lactate > 2:
-        score += 0.10
-    
-    # Creatinine
-    if data.creatinine > 2:
-        score += 0.15
-    elif data.creatinine > 1.5:
-        score += 0.10
-    
-    # FiO2
-    if data.fio2 > 60:
-        score += 0.15
-    elif data.fio2 > 40:
-        score += 0.08
-    
-    # Urine Output
-    if data.urine_output < 20:
-        score += 0.10
-    elif data.urine_output < 40:
-        score += 0.05
-    
-    # Add some randomness
-    score += random.uniform(-0.05, 0.05)
-    
-    return max(0.0, min(1.0, score))
 
 
 @router.get("/patient/{patient_id}")

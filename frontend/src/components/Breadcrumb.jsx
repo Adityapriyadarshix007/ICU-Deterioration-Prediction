@@ -1,49 +1,48 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { ChevronRight, Home } from 'lucide-react';
 
-function Breadcrumb() {
+const Breadcrumb = () => {
   const location = useLocation();
-  const pathnames = location.pathname.split('/').filter((x) => x);
+  const pathnames = location.pathname.split('/').filter(x => x);
 
-  // Map path to display names
-  const breadcrumbMap = {
-    'admin': 'Admin',
-    'patients': 'Patients',
-    'users': 'Users',
-    'analytics': 'Analytics',
-    'settings': 'Settings',
-    'logs': 'Activity Logs',
+  const getLabel = (path) => {
+    const labels = {
+      'admin': 'Dashboard',
+      'patients': 'Patients',
+      'users': 'Users',
+      'analytics': 'Analytics',
+      'settings': 'Settings',
+      'logs': 'Logs',
+      'dashboard': 'Dashboard'
+    };
+    return labels[path] || path.charAt(0).toUpperCase() + path.slice(1);
   };
 
   return (
-    <nav className="text-sm text-gray-500 mb-4">
-      <ol className="list-none p-0 inline-flex items-center space-x-2">
-        <li>
-          <Link to="/dashboard" className="text-blue-600 hover:text-blue-800">
-            🏠 Dashboard
-          </Link>
-        </li>
-        {pathnames.map((value, index) => {
-          const to = `/${pathnames.slice(0, index + 1).join('/')}`;
-          const isLast = index === pathnames.length - 1;
-          const displayName = breadcrumbMap[value] || value.charAt(0).toUpperCase() + value.slice(1);
+    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6" aria-label="Breadcrumb">
+      <Link to="/dashboard" className="flex items-center hover:text-blue-600 transition-colors">
+        <Home className="w-4 h-4" />
+      </Link>
+      {pathnames.map((value, index) => {
+        const isLast = index === pathnames.length - 1;
+        const to = `/${pathnames.slice(0, index + 1).join('/')}`;
 
-          return (
-            <li key={to} className="flex items-center space-x-2">
-              <span className="text-gray-400">/</span>
-              {isLast ? (
-                <span className="text-gray-700 font-medium">{displayName}</span>
-              ) : (
-                <Link to={to} className="text-blue-600 hover:text-blue-800">
-                  {displayName}
-                </Link>
-              )}
-            </li>
-          );
-        })}
-      </ol>
+        return (
+          <React.Fragment key={to}>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+            {isLast ? (
+              <span className="font-medium text-gray-900">{getLabel(value)}</span>
+            ) : (
+              <Link to={to} className="hover:text-blue-600 transition-colors">
+                {getLabel(value)}
+              </Link>
+            )}
+          </React.Fragment>
+        );
+      })}
     </nav>
   );
-}
+};
 
 export default Breadcrumb;

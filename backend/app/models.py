@@ -14,10 +14,13 @@ class User(BaseModel):
     google_id: Optional[str] = None
     profile_picture: Optional[str] = None
     is_active: bool = True
-    is_admin: bool = False  # Admin flag
-    role: str = "clinician"  # admin, clinician, viewer
+    is_admin: bool = False
+    role: str = "clinician"
     created_at: datetime = Field(default_factory=datetime.utcnow)
     last_login: Optional[datetime] = None
+    # Optional: Keep these for future use, but they won't be used for direct password change
+    reset_password_token: Optional[str] = None
+    reset_password_expires: Optional[datetime] = None
 
 class Prediction(BaseModel):
     patient_id: str

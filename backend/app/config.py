@@ -1,14 +1,9 @@
 """
 Configuration settings for the ICU Deterioration Prediction API.
-Loads environment variables and provides configuration for:
-- MongoDB connection
-- JWT authentication
-- Google OAuth
 """
 
 import os
 from dotenv import load_dotenv
-from typing import Optional
 
 load_dotenv()
 
@@ -18,12 +13,12 @@ class Settings:
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     
-    # MongoDB
-    MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+    # MongoDB - Updated with new cluster URL
+    MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb+srv://REPLACED_WITH_PLACEHOLDER@icu-cluster.dtvmvpv.mongodb.net/")
     MONGODB_DB_NAME: str = os.getenv("MONGODB_DB_NAME", "icu_predictor")
     
     # JWT
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
     
@@ -37,5 +32,16 @@ class Settings:
     
     # Model
     MODEL_PATH: str = os.getenv("MODEL_PATH", "./data/models/cnn_lstm_attention_model.h5")
+    
+    # Email Configuration
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USERNAME: str = os.getenv("SMTP_USERNAME", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "noreply@icupredictor.com")
+    SENDGRID_API_KEY: str = os.getenv("SENDGRID_API_KEY", "")
+    
+    # Frontend URL
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 settings = Settings()

@@ -10,7 +10,8 @@ import logging
 from app.config import settings
 from app.database import Database
 from app.routes import auth_router, google_router, predictions_router, dashboard_router
-from app.routes.admin import users_router, analytics_router, settings_router, patients_router
+from app.routes.patients import router as patients_router
+from app.routes.admin import users_router, analytics_router, settings_router, patients_router as admin_patients_router, logs_router
 from app.ml_model import ml_model
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -54,11 +55,15 @@ app.include_router(google_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(predictions_router, prefix="/api/predict", tags=["Predictions"])
 app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Dashboard"])
 
+# Patient routes (public - for all authenticated users)
+app.include_router(patients_router, prefix="/api", tags=["Patients"])
+
 # Admin routers
 app.include_router(users_router, prefix="/api/admin", tags=["Admin - Users"])
 app.include_router(analytics_router, prefix="/api/admin", tags=["Admin - Analytics"])
 app.include_router(settings_router, prefix="/api/admin", tags=["Admin - Settings"])
-app.include_router(patients_router, prefix="/api/admin", tags=["Admin - Patients"])
+app.include_router(admin_patients_router, prefix="/api/admin", tags=["Admin - Patients"])
+app.include_router(logs_router, prefix="/api/admin", tags=["Admin - Logs"])
 
 @app.get("/")
 async def root():
@@ -72,6 +77,7 @@ async def root():
             "/api/auth": "Authentication",
             "/api/predict": "Predictions",
             "/api/dashboard": "Dashboard",
+            "/api/patients": "Patients (Public)",
             "/api/admin": "Admin Panel"
         }
     }

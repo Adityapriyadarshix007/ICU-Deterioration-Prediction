@@ -3,12 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 
 function Navbar() {
-  const { user, logout } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useContext(AuthContext);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
   };
 
   const getInitials = () => {
@@ -18,8 +16,13 @@ function Navbar() {
     return user?.username?.charAt(0).toUpperCase() || 'U';
   };
 
-  // Check if user is admin - using multiple checks for safety
+  // Check if user is admin
   const isAdmin = user?.is_admin === true || user?.role === 'admin';
+
+  // Don't render navbar if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <nav className="bg-blue-600 text-white shadow-lg">
@@ -36,7 +39,6 @@ function Navbar() {
             <Link to="/dashboard" className="hover:text-blue-200 transition">Dashboard</Link>
             <Link to="/patients" className="hover:text-blue-200 transition">Patients</Link>
             
-            {/* Admin Link - show if user is admin */}
             {isAdmin && (
               <Link to="/admin" className="hover:text-yellow-200 transition text-yellow-300 font-medium flex items-center">
                 ⚙️ Admin

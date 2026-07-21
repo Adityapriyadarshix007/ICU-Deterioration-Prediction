@@ -1,5 +1,5 @@
 """
-Admin - System Settings Routes
+Admin Settings Routes
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -8,7 +8,6 @@ import logging
 
 from app import auth
 from app.database import Database
-from app.config import settings
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -16,66 +15,89 @@ logger = logging.getLogger(__name__)
 def get_db():
     return Database.get_db()
 
-async def check_admin(current_user: dict):
-    if not current_user.get("is_admin", False):
+@router.get("/settings")
+async def get_settings(
+    current_user: dict = Depends(auth.get_current_user)
+):
+    """Get system settings"""
+    db = get_db()
+    
+    # Check if user is admin
+    if not current_user.get('is_admin', False):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin privileges required"
+            detail="Admin access required"
         )
-    return current_user
-
-
-@router.get("/settings")
-async def get_system_settings(
-    current_user: dict = Depends(auth.get_current_user)
-):
-    """Get system settings (admin only)"""
-    await check_admin(current_user)
-    db = get_db()
     
-    settings_doc = db.settings.find_one({"_id": "system_settings"})
-    
-    if not settings_doc:
-        settings_doc = {
-            "app_name": settings.APP_NAME,
-            "version": settings.APP_VERSION,
-            "maintenance_mode": False,
-            "allow_registration": True,
-            "max_predictions_per_day": 100,
-            "created_at": datetime.utcnow()
-        }
-        db.settings.insert_one(settings_doc)
-    
-    settings_doc["_id"] = str(settings_doc["_id"])
-    return settings_doc
-
+    try:
+        # Get settings from database or return defaults
+        settings = db.settings.find_one({})
+        
+        if not settings:
+            # Default settings
+            settings = {
+                "app_name": "ICU Predictor",
+                "version": "1.0.0",
+                "maintenance_mode": False,
+                "model_threshold": 0.459,
+                "prediction_window": 24,
+                "alert_frequency": 60,
+                "auto_prediction": True,
+                "imputation_method": "knn",
+                "email_notifications": True,
+                "data_retention_days": 30,
+                "updated_at": datetime.utcnow()
+            }
+            # Save default settings
+            db.settings.insert_one(settings)
+        
+        settings["id"] = str(settings["_id"])
+        settings.pop("_id", None)
+        
+        return settings
+    except Exception as e:
+        logger.error(f"Failed to get settings: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get settings: {str(e)}"
+        )
 
 @router.put("/settings")
-async def update_system_settings(
-    update_data: dict,
+async def update_settings(
+    settings_data: dict,
     current_user: dict = Depends(auth.get_current_user)
 ):
-    """Update system settings (admin only)"""
-    await check_admin(current_user)
+    """Update system settings"""
     db = get_db()
     
-    allowed_fields = [
-        "app_name", "version", "maintenance_mode",
-        "allow_registration", "max_predictions_per_day"
-    ]
-    
-    update_dict = {k: v for k, v in update_data.items() if k in allowed_fields}
-    
-    if not update_dict:
+    # Check if user is admin
+    if not current_user.get('is_admin', False):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No valid settings to update"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
         )
     
-    db.settings.update_one(
-        {"_id": "system_settings"},
-        {"$set": {**update_dict, "updated_at": datetime.utcnow()}},
-        upsert=True
-    )
-    
-    return {"message": "Settings updated successfully", "settings": update_dict}
+    try:
+        # Remove id from update data
+        settings_data.pop("id", None)
+        settings_data.pop("_id", None)
+        
+        # Add update timestamp
+        settings_data["updated_at"] = datetime.utcnow()
+        settings_data["updated_by"] = current_user.get("username")
+        
+        # Update settings
+        result = db.settings.update_one(
+            {},
+            {"$set": settings_data},
+            upsert=True
+        )
+        
+        logger.info(f"Settings updated by {current_user.get('username')}")
+        return {"message": "Settings updated successfully"}
+    except Exception as e:
+        logger.error(f"Failed to update settings: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update settings: {str(e)}"
+        )
