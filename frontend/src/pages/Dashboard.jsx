@@ -177,6 +177,9 @@ function Dashboard() {
       
       console.log('📥 Received prediction:', predictionData);
       
+      // ============================================================
+      // FIX: Use 'LOW' as fallback instead of 'STABLE'
+      // ============================================================
       setPrediction({
         patient_id: patientId,
         patient_name: patientName,
@@ -186,7 +189,7 @@ function Dashboard() {
         diagnosis: patientDiagnosis,
         risk_score: predictionData.risk_score || 0.5,
         risk_percentage: (predictionData.risk_score || 0.5) * 100,
-        alert_level: predictionData.alert_level || 'STABLE',
+        alert_level: predictionData.alert_level || 'LOW',  // Changed from 'STABLE'
         confidence: predictionData.confidence || 0.85,
         features: predictionData.features || data,
         shap_values: predictionData.shap_values || null,
@@ -205,7 +208,9 @@ function Dashboard() {
       
       toast.error(errorMsg);
       
-      // Set a fallback prediction for demo purposes
+      // ============================================================
+      // FIX: Use 'LOW' as fallback for demo prediction
+      // ============================================================
       setPrediction({
         patient_id: patientId,
         patient_name: patientName,
@@ -215,7 +220,7 @@ function Dashboard() {
         diagnosis: patientDiagnosis,
         risk_score: 0.35,
         risk_percentage: 35,
-        alert_level: 'STABLE',
+        alert_level: 'LOW',  // Changed from 'STABLE'
         confidence: 0.78,
         features: {
           heart_rate: parseFloat(vitals.heart_rate) || 0,
