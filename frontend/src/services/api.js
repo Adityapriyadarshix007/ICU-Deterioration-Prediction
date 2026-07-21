@@ -22,7 +22,7 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
-// Response interceptor - Don't intercept login 401s
+// Response interceptor - DON'T use window.location.href
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -31,15 +31,15 @@ api.interceptors.response.use(
       error.config?.url?.includes('/auth/login') ||
       error.config?.url?.includes('/auth/google/login');
 
-    // Only handle 401 for non-login requests and if user has a token
+    // Only handle 401 for non-login requests
     if (
       error.response?.status === 401 &&
-      !isAuthLoginRequest &&
-      localStorage.getItem('access_token')
+      !isAuthLoginRequest
     ) {
+      // Just remove token and let React Router handle redirect
       localStorage.removeItem('access_token');
-      toast.error('Session expired. Please login again.');
-      window.location.href = '/login';
+      // Don't use window.location.href - let ProtectedRoute handle it
+      // The error will be caught by the component
     }
 
     return Promise.reject(error);

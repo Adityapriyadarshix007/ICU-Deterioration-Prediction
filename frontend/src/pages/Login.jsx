@@ -88,7 +88,6 @@ function Login() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordMatch, setPasswordMatch] = useState(true);
-  const [loginSuccess, setLoginSuccess] = useState(false);
   const { login, isAuthenticated } = useContext(AuthContext);
   const { showLoading, updateLoading, hideLoading, isLoading } = useLoading();
   const navigate = useNavigate();
@@ -102,14 +101,12 @@ function Login() {
     }
   }, [controls, inView]);
 
-  // Navigate when authentication becomes true
+  // If already authenticated, redirect immediately
   useEffect(() => {
-    if (isAuthenticated && loginSuccess) {
-      toast.success('Welcome back!');
-      navigate('/dashboard');
-      setLoginSuccess(false);
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
     }
-  }, [isAuthenticated, loginSuccess, navigate]);
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -170,7 +167,6 @@ function Login() {
     
     setIsSubmitting(true);
     
-    // Show loading with lock video
     showLoading({
       isSuccess: true,
       message: 'Authenticating...',
@@ -197,7 +193,6 @@ function Login() {
 
       const response = await api.login(formData.username, formData.password);
       
-      // Update loading to success
       updateLoading({
         isSuccess: true,
         message: 'Access Granted!',
@@ -205,15 +200,13 @@ function Login() {
         videoDuration: 4000
       });
       
-      // Perform login - this sets user in context
+      // Perform login
       await login(response.data.access_token);
       
-      // Set login success flag to trigger navigation
-      setLoginSuccess(true);
-      
-      // Hide loading after 4 seconds (video duration)
+      // Navigate immediately after login, no waiting for useEffect
       setTimeout(() => {
         hideLoading();
+        navigate('/dashboard', { replace: true });
         setIsSubmitting(false);
       }, 4000);
       
@@ -256,10 +249,11 @@ function Login() {
       });
       
       await login(response.data.access_token);
-      setLoginSuccess(true);
       
+      // Navigate immediately
       setTimeout(() => {
         hideLoading();
+        navigate('/dashboard', { replace: true });
         setIsSubmitting(false);
       }, 4000);
       
@@ -288,8 +282,8 @@ function Login() {
   const togglePasswordVisibility = () => setShowPassword(prev => !prev);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(prev => !prev);
 
-  // If loading screen is showing, render nothing
-  if (isLoading) {
+  // If loading screen is showing or already authenticated, render nothing
+  if (isLoading || isAuthenticated) {
     return null;
   }
 

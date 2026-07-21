@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    // Show loading with logout animation using existing LoadingContext
+    // Show loading with logout animation
     showLoading({
       isSuccess: true,
       message: 'Logging out...',
@@ -88,14 +88,12 @@ export const AuthProvider = ({ children }) => {
       // ignore
     }
     
-    // Wait for the full 4-second animation to complete
-    // The LoadingScreen's onComplete will call hideLoading
-    // We need to clear auth state after the animation finishes
+    // Clear auth state AFTER the animation
     setTimeout(() => {
       localStorage.removeItem('access_token');
       setUser(null);
       toast.success('Logged out successfully');
-      // The LoadingScreen will auto-hide via onComplete callback
+      hideLoading();
     }, 4000);
   };
 
