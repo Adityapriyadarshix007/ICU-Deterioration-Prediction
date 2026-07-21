@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import logging
+import os
 
 from app.config import settings
 from app.database import Database
@@ -84,12 +85,30 @@ async def root():
 
 @app.get("/api/health")
 async def health_check():
+    """Health check endpoint - checks database connection"""
+    mongodb_status = "disconnected"
+    try:
+        # Check if Database is initialized and connected
+        if hasattr(Database, 'db') and Database.db is not None:
+            # Try to ping the database
+            Database.db.command('ping')
+            mongodb_status = "connected"
+        else:
+            # Try to reconnect
+            Database.connect()
+            mongodb_status = "connected"
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        mongodb_status = "error"
+    
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "mongodb": "connected" if Database.db else "disconnected"
+        "mongodb": mongodb_status,
+        "version": settings.APP_VERSION
     }
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
