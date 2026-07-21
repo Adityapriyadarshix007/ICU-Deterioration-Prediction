@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: icu-predictor-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: |
+      pip install -r requirements.txt
+    startCommand: |
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGODB_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: FRONTEND_URL
+        value: https://icu-predictor.vercel.app
+      - key: ALLOWED_ORIGINS
+        value: https://icu-predictor.vercel.app,http://localhost:5173,http://localhost:3000
+      - key: DEBUG
+        value: False
