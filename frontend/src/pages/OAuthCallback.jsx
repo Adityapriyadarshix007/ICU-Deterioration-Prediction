@@ -15,11 +15,27 @@ function OAuthCallback() {
         
         if (code) {
           console.log('OAuth callback received with code');
+          // The token is handled by the Google OAuth library
+          // Just wait briefly then navigate
           setTimeout(() => {
             navigate('/dashboard');
           }, 2000);
         } else {
-          navigate('/dashboard');
+          // Check if we have a credential in the URL fragment
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          
+          if (accessToken) {
+            // Handle implicit flow
+            console.log('Access token found in hash');
+            // The Google OAuth library handles this
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 2000);
+          } else {
+            // No token found, redirect to login
+            navigate('/login');
+          }
         }
       } catch (error) {
         console.error('OAuth callback error:', error);

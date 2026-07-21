@@ -26,7 +26,7 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS
+# CORS - Allow all origins for development, specific for production
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
@@ -88,13 +88,10 @@ async def health_check():
     """Health check endpoint - checks database connection"""
     mongodb_status = "disconnected"
     try:
-        # Check if Database is initialized and connected
         if hasattr(Database, 'db') and Database.db is not None:
-            # Try to ping the database
             Database.db.command('ping')
             mongodb_status = "connected"
         else:
-            # Try to reconnect
             Database.connect()
             mongodb_status = "connected"
     except Exception as e:

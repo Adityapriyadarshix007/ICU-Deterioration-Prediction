@@ -18,13 +18,13 @@ logger = logging.getLogger(__name__)
 def get_db():
     return Database.get_db()
 
-
 @router.post("/google/login", response_model=schemas.Token)
 async def google_login(auth_data: schemas.GoogleAuthRequest):
     """Login with Google ID token"""
     db = get_db()
     
     logger.info("🔐 Google login attempt")
+    logger.info(f"Google Client ID: {settings.GOOGLE_CLIENT_ID}")
     
     if not auth_data.id_token:
         raise HTTPException(
@@ -33,7 +33,7 @@ async def google_login(auth_data: schemas.GoogleAuthRequest):
         )
     
     try:
-        # IMPORTANT: Use GET, not POST for Google's tokeninfo endpoint
+        # Verify the token with Google
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 "https://oauth2.googleapis.com/tokeninfo",
@@ -48,10 +48,13 @@ async def google_login(auth_data: schemas.GoogleAuthRequest):
                 )
             
             token_info = response.json()
+            logger.info(f"Token info: {token_info}")
         
         # Verify audience matches our client ID
-        if token_info.get("aud") != settings.GOOGLE_CLIENT_ID:
-            logger.error(f"Invalid audience: {token_info.get('aud')}")
+        aud = token_info.get("aud")
+        if aud != settings.GOOGLE_CLIENT_ID:
+            logger.error(f"Invalid audience: {aud}")
+            logger.info(f"Expected: {settings.GOOGLE_CLIENT_ID}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token audience"

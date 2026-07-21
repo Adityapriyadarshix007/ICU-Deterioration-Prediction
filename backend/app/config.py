@@ -4,8 +4,10 @@ Configuration settings for the ICU Deterioration Prediction API.
 
 import os
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 class Settings:
     # Application
@@ -13,8 +15,8 @@ class Settings:
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     
-    # MongoDB - Updated with new cluster URL
-    MONGODB_URL: str = os.getenv("MONGODB_URL")
+    # MongoDB
+    MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
     MONGODB_DB_NAME: str = os.getenv("MONGODB_DB_NAME", "icu_predictor")
     
     # JWT
@@ -22,15 +24,13 @@ class Settings:
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
     
-    # Google OAuth
+    # Google OAuth - Use exact Client ID from Google Cloud Console
     GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "470384815602-voh3j0i6bsdnupjb4s2hvlhmi3172o0g.apps.googleusercontent.com")
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
-    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/api/auth/google/callback")
+    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "https://icu-deterioration-prediction.vercel.app/oauth-callback")
     
-    # CORS - Updated with Vercel URL
-    ALLOWED_ORIGINS: list = os.getenv("ALLOWED_ORIGINS", 
-        "http://localhost:3000,http://localhost:5173,http://localhost:8000,https://icu-deterioration-prediction.vercel.app,https://icu-deterioration-prediction.onrender.com"
-    ).split(",")
+    # CORS - Must include ALL origins your app uses
+    ALLOWED_ORIGINS: list = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173,https://icu-deterioration-prediction.vercel.app,https://icu-deterioration-prediction.onrender.com").split(",")
     
     # Model
     MODEL_PATH: str = os.getenv("MODEL_PATH", "./data/models/cnn_lstm_attention_model.h5")
@@ -47,3 +47,8 @@ class Settings:
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://icu-deterioration-prediction.vercel.app")
 
 settings = Settings()
+
+# Log the configuration
+logger.info(f"Google Client ID: {settings.GOOGLE_CLIENT_ID}")
+logger.info(f"Allowed Origins: {settings.ALLOWED_ORIGINS}")
+logger.info(f"Frontend URL: {settings.FRONTEND_URL}")
