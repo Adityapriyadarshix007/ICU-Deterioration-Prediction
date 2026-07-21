@@ -16,18 +16,11 @@ bcrypt==4.1.2
 passlib==1.7.4
 python-jose[cryptography]==3.3.0
 
-# ML - Use pre-built wheels
+# ML - Try to install, but allow failure
 catboost==1.2.2
 numpy==1.24.3
 pandas==2.0.3
 scikit-learn==1.3.2
-
-# Explainability - Use pre-built wheels
 shap==0.44.0
-
-# Visualization
 matplotlib==3.7.2
 seaborn==0.13.2
-
-# Utilities
-jupyter==1.0.0
