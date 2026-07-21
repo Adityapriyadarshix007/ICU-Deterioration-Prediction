@@ -19,12 +19,16 @@ def get_db():
 
 
 @router.post("/public", response_model=schemas.PredictionResponse)
-async def predict_public(patient_data: schemas.PatientData):
-    """Public prediction endpoint"""
+async def predict_public(
+    patient_data: schemas.PatientData,
+    current_user: dict = Depends(auth.get_current_user)
+):
+    """Public prediction endpoint - Now requires authentication"""
     db = get_db()
     
     logger.info(f"📊 Prediction request for: {patient_data.patient_id}")
     logger.info(f"📊 Patient data: {patient_data.dict()}")
+    logger.info(f"👤 User: {current_user.get('username', 'unknown')}")
     
     try:
         # Use the ML model to make prediction
@@ -37,20 +41,28 @@ async def predict_public(patient_data: schemas.PatientData):
             alert_level = "CRITICAL"
             confidence = "HIGH"
         elif risk_score > 0.5:
-            alert_level = "WARNING"
+            alert_level = "HIGH"
             confidence = "MEDIUM"
+        elif risk_score > 0.3:
+            alert_level = "MEDIUM"
+            confidence = "LOW"
         else:
-            alert_level = "STABLE"
+            alert_level = "LOW"
             confidence = "LOW"
         
         features = ['heart_rate', 'sbp', 'dbp', 'gcs', 'lactate', 'urine_output', 'fio2', 'creatinine']
+        
+        # Get user info
+        user_id = current_user.get("_id")
+        username = current_user.get("username", "unknown")
         
         # Save prediction to database
         try:
             prediction_doc = {
                 "patient_id": patient_data.patient_id,
                 "patient_name": patient_data.patient_name,
-                "user_id": "public",
+                "user_id": str(user_id) if user_id else "unknown",
+                "username": username,
                 "risk_score": risk_score,
                 "risk_percentage": risk_score * 100,
                 "alert_level": alert_level,
@@ -59,23 +71,39 @@ async def predict_public(patient_data: schemas.PatientData):
                 "is_high_risk": risk_score > 0.5,
                 "created_at": datetime.utcnow()
             }
-            db.predictions.insert_one(prediction_doc)
-            logger.info("✅ Prediction saved to database")
+            result = db.predictions.insert_one(prediction_doc)
+            prediction_id = str(result.inserted_id)
+            logger.info(f"✅ Prediction saved to database with ID: {prediction_id}")
+            
+            # ============================================================
+            # CRITICAL FIX: Also save to logs collection for activity tracking
+            # ============================================================
+            log_doc = {
+                "user_id": str(user_id) if user_id else "unknown",
+                "username": username,
+                "action": "PREDICTION",
+                "patient_id": patient_data.patient_id,
+                "patient_name": patient_data.patient_name,
+                "alert_level": alert_level,
+                "risk_score": risk_score,
+                "prediction_id": prediction_id,
+                "created_at": datetime.utcnow()
+            }
+            db.logs.insert_one(log_doc)
+            logger.info(f"✅ Activity log saved for user: {username}")
+            
         except Exception as e:
             logger.warning(f"Could not save prediction: {e}")
         
         # ============================================================
-        # IMPORTANT: Create or update patient record
-        # This ensures the patients collection stays in sync
+        # Create or update patient record
         # ============================================================
         try:
-            # Prepare patient data
             patient_update = {
                 "patient_id": patient_data.patient_id,
                 "patient_name": patient_data.patient_name,
                 "risk_level": alert_level,
                 "updated_at": datetime.utcnow(),
-                # Store vitals as part of patient record
                 "vitals": {
                     "heart_rate": patient_data.heart_rate,
                     "sbp": patient_data.sbp,
@@ -88,7 +116,6 @@ async def predict_public(patient_data: schemas.PatientData):
                 }
             }
             
-            # Add optional fields if they exist
             if hasattr(patient_data, 'age') and patient_data.age:
                 patient_update["age"] = patient_data.age
             if hasattr(patient_data, 'gender') and patient_data.gender:
@@ -102,8 +129,7 @@ async def predict_public(patient_data: schemas.PatientData):
             else:
                 patient_update["status"] = "Active"
             
-            # Upsert patient record
-            result = db.patients.update_one(
+            db.patients.update_one(
                 {"patient_id": patient_data.patient_id},
                 {
                     "$set": patient_update,
@@ -113,11 +139,7 @@ async def predict_public(patient_data: schemas.PatientData):
                 },
                 upsert=True
             )
-            
-            if result.upserted_id:
-                logger.info(f"✅ New patient created: {patient_data.patient_id}")
-            else:
-                logger.info(f"✅ Patient updated: {patient_data.patient_id}")
+            logger.info(f"✅ Patient updated: {patient_data.patient_id}")
                 
         except Exception as e:
             logger.warning(f"Could not create/update patient: {e}")

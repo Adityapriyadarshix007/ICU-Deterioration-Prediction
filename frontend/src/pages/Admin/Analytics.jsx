@@ -16,7 +16,8 @@ function Analytics() {
     critical_alerts: 0,
     avg_risk_score: 0,
     predictions_by_day: [],
-    risk_distribution: { LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0 }
+    risk_distribution: { LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0 },
+    users: { total: 0, active: 0, admins: 0 }
   });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -31,10 +32,18 @@ function Analytics() {
       const response = await api.getOverview();
       const data = response.data || {};
       
-      // Ensure risk_distribution exists with proper defaults
-      const riskDistribution = data.risk_distribution || { LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0 };
+      console.log('📊 Analytics data received:', data);
       
-      // Ensure it has all required keys
+      // ============================================================
+      // CRITICAL FIX: Read the correct structure from backend
+      // Backend returns: { users: {...}, predictions: {...}, risk_distribution: {...}, trends: [...] }
+      // ============================================================
+      const predictions = data.predictions || {};
+      const riskDistribution = data.risk_distribution || { LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0 };
+      const trends = data.trends || [];
+      const users = data.users || { total: 0, active: 0, admins: 0 };
+      
+      // Ensure risk_distribution has all required keys
       const safeRiskDistribution = {
         LOW: riskDistribution.LOW || 0,
         MEDIUM: riskDistribution.MEDIUM || 0,
@@ -43,19 +52,23 @@ function Analytics() {
       };
       
       setAnalytics({
-        total_predictions: data.total_predictions || 0,
-        high_risk_patients: data.high_risk_patients || 0,
-        critical_alerts: data.critical_alerts || 0,
-        avg_risk_score: data.avg_risk_score || 0,
-        predictions_by_day: data.predictions_by_day || [],
-        risk_distribution: safeRiskDistribution
+        total_predictions: predictions.total || 0,
+        high_risk_patients: predictions.high_risk || 0,
+        critical_alerts: predictions.critical || 0,
+        avg_risk_score: predictions.avg_risk || 0,
+        predictions_by_day: trends,
+        risk_distribution: safeRiskDistribution,
+        users: users
       });
+      
     } catch (error) {
-      console.error('Failed to load analytics:', error);
+      console.error('❌ Failed to load analytics:', error);
       toast.error('Failed to load analytics');
+      
       if (error.response?.status === 403) {
         navigate('/dashboard');
       }
+      
       // Set mock data for demo
       setAnalytics({
         total_predictions: 156,
@@ -71,7 +84,8 @@ function Analytics() {
           { date: '2026-07-19', count: 25 },
           { date: '2026-07-20', count: 20 }
         ],
-        risk_distribution: { LOW: 45, MEDIUM: 35, HIGH: 15, CRITICAL: 5 }
+        risk_distribution: { LOW: 45, MEDIUM: 35, HIGH: 15, CRITICAL: 5 },
+        users: { total: 12, active: 8, admins: 2 }
       });
     } finally {
       setLoading(false);
@@ -86,7 +100,6 @@ function Analytics() {
     );
   }
 
-  // Safely get total patients with null check
   const riskDist = analytics.risk_distribution || { LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0 };
   const totalPatients = Object.values(riskDist).reduce((a, b) => a + b, 0);
 
@@ -167,7 +180,7 @@ function Analytics() {
           </div>
         </div>
 
-        {/* Risk Distribution - Safe rendering */}
+        {/* Risk Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-xl shadow">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -220,6 +233,28 @@ function Analytics() {
                   <p>No recent activity</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* User Stats */}
+        <div className="mt-6 bg-white p-6 rounded-xl shadow">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 text-gray-500" />
+            User Statistics
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <p className="text-2xl font-bold text-blue-600">{analytics.users?.total || 0}</p>
+              <p className="text-sm text-gray-600">Total Users</p>
+            </div>
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <p className="text-2xl font-bold text-green-600">{analytics.users?.active || 0}</p>
+              <p className="text-sm text-gray-600">Active Users</p>
+            </div>
+            <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <p className="text-2xl font-bold text-purple-600">{analytics.users?.admins || 0}</p>
+              <p className="text-sm text-gray-600">Administrators</p>
             </div>
           </div>
         </div>
