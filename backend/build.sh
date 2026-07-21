@@ -1,12 +1,17 @@
 #!/bin/bash
-# Build script for Render
+echo "🚀 Build started..."
+echo "Python version: $(python --version)"
 
-echo "🚀 Installing Python dependencies..."
-pip install --upgrade pip
+# Install core packages
+pip install --upgrade pip setuptools wheel
 
-# Try to install with --no-cache-dir and fallback options
-pip install --no-cache-dir -r requirements.txt || \
-pip install --no-cache-dir --no-deps -r requirements.txt || \
-pip install fastapi uvicorn pymongo python-dotenv pydantic bcrypt passlib python-jose[cryptography]
+# Install all requirements with dependencies
+pip install --no-cache-dir -r requirements.txt
+
+# Ensure click and other critical packages are installed
+pip install --no-cache-dir click uvicorn[standard] fastapi pymongo python-dotenv pydantic bcrypt passlib python-jose[cryptography] python-multipart
+
+# Try ML packages (optional)
+pip install --no-cache-dir catboost numpy pandas scikit-learn shap matplotlib seaborn || echo "⚠️ ML packages failed, continuing..."
 
 echo "✅ Build complete!"
