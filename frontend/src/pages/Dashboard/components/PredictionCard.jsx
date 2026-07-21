@@ -31,7 +31,24 @@ const PredictionCard = ({ prediction, onExport, onPrint }) => {
   const ciLower = Math.max(0, Math.round((riskScore - ciMargin) * 100));
   const ciUpper = Math.min(100, Math.round((riskScore + ciMargin) * 100));
   
+  // ============================================================
+  // FIX: Handle all alert levels properly
+  // ============================================================
   const alertLevel = prediction.alert_level || getAlertLevel(riskPercentage);
+  
+  // Get color based on alert level
+  const getAlertColor = (level) => {
+    const colors = {
+      'CRITICAL': 'border-red-500',
+      'HIGH': 'border-orange-500',
+      'MEDIUM': 'border-yellow-500',
+      'LOW': 'border-green-500',
+      'WARNING': 'border-yellow-500',
+      'STABLE': 'border-green-500'
+    };
+    return colors[level] || 'border-blue-500';
+  };
+  
   const rec = getRecommendation(riskPercentage);
   
   const threshold = prediction.threshold || 0.459;
@@ -42,7 +59,6 @@ const PredictionCard = ({ prediction, onExport, onPrint }) => {
     try {
       toast.loading('Generating PDF...', { id: 'pdf-export' });
       
-      // Prepare data for PDF
       const pdfData = {
         patient_name: prediction.patient_name,
         patient_id: prediction.patient_id,
@@ -83,11 +99,7 @@ const PredictionCard = ({ prediction, onExport, onPrint }) => {
       <Card 
         title="Prediction Summary"
         icon={FileText}
-        className={`border-l-8 ${
-          alertLevel === 'CRITICAL' ? 'border-red-500' :
-          alertLevel === 'WARNING' ? 'border-yellow-500' :
-          'border-green-500'
-        }`}
+        className={`border-l-8 ${getAlertColor(alertLevel)}`}
         actions={
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" icon={Download} onClick={handleExportPDF}>
