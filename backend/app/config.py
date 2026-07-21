@@ -14,7 +14,7 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     
     # MongoDB - Updated with new cluster URL
-    MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb+srv://REPLACED_WITH_PLACEHOLDER@icu-cluster.dtvmvpv.mongodb.net/")
+    MONGODB_URL: str = os.getenv("MONGODB_URL")
     MONGODB_DB_NAME: str = os.getenv("MONGODB_DB_NAME", "icu_predictor")
     
     # JWT

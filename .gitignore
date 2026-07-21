@@ -101,3 +101,4 @@ htmlcov/
 id_rsa*
 *.p12
 *.pfx
+.vercel
