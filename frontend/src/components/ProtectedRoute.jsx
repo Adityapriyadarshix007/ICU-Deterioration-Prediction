@@ -1,9 +1,11 @@
 import React, { useContext } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
+import { useLoading } from '../context/LoadingContext.jsx';
 
 function ProtectedRoute() {
   const { isAuthenticated, loading } = useContext(AuthContext);
+  const { isLoading } = useLoading();
 
   // Show loading spinner while checking auth
   if (loading) {
@@ -17,7 +19,11 @@ function ProtectedRoute() {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Don't redirect during logout animation
+  if (isLoading) {
+    return null; // Let the LoadingScreen handle the UI
+  }
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
