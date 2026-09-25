@@ -726,10 +726,3 @@ Machine Learning | Healthcare AI | Full Stack Development
 GitHub: https://github.com/Adityapriyadarshix007
 
 LinkedIn: https://www.linkedin.com/in/aditya-priyadarshi-026816282/
-
-<div align="center">
-🏥 Advancing Early ICU Deterioration Prediction Through Explainable Artificial Intelligence
-
-Built with ❤️ for Clinical AI Research
-
-</div> MDEOF echo "README written" && wc -l README.md ```
