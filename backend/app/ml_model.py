@@ -58,16 +58,18 @@ class MOFPredictor:
             if lo is not None:
                 x[c] = x[c].clip(lo, hi)
 
-        # 4. median-impute
-        for c in self.base:
-            x[c] = x[c].fillna(self.pipe["medians"][c])
-
-        # 5. standardize
+        # 4. standardize (fit on training data)
         for c in self.base:
             if c in self.pipe["scaler"]:
                 m = self.pipe["scaler"][c]["mean"]
                 s = self.pipe["scaler"][c]["scale"]
                 x[c] = (x[c] - m) / s
+
+        # 5. ZERO-IMPUTE in standardized space (matches deployed model config)
+        #    The model was trained with phase6 config imputation='zero':
+        #    missing values were filled with 0 in standardized space,
+        #    equivalent to the training mean in raw units.
+        x[self.base] = x[self.base].fillna(0.0)
 
         # 6. reorder + predict
         X = x[self.all_cols].astype(float).values

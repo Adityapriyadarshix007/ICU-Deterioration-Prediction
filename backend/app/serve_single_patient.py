@@ -112,15 +112,15 @@ class SinglePatientPredictor:
             if lo is not None:
                 x[c] = x[c].clip(lo, hi)
 
-        # Median impute
-        for c in self.base:
-            x[c] = x[c].fillna(self.pipe["medians"][c])
-
         # Standardize
         for c in self.base:
             if c in self.pipe["scaler"]:
                 pr = self.pipe["scaler"][c]
                 x[c] = (x[c] - pr["mean"]) / pr["scale"]
+
+        # Zero-impute in standardized space
+        # (matches phase6 config: imputation='zero')
+        x[self.base] = x[self.base].fillna(0.0)
 
         return x[self.base + self.masks].astype(float).values
 
