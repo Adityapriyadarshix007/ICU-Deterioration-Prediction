@@ -40,8 +40,14 @@ from config import (
     MODELS_TO_TRAIN,
     RANDOM_STATE,
 )
-from database import DatabaseManager
-from data_loader import DataLoader
+try:
+    from app.database import DatabaseManager
+except ImportError:
+    from database import DatabaseManager
+try:
+    from app.data_loader import DataLoader
+except ImportError:
+    from data_loader import DataLoader
 
 
 # ============================================================
