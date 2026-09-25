@@ -27,6 +27,15 @@
 *Built with Explainable AI • Full Stack Deployment • Reproducible Research*
 
 </div>
+</p>
+
+### 🚑 Predicting ICU Patient Deterioration Before Multi-Organ Failure Occurs
+
+**Developed using the MIMIC-IV v3.1 Clinical Database**
+
+*Built with Explainable AI • Full Stack Deployment • Reproducible Research*
+
+</div>
 
 ---
 
