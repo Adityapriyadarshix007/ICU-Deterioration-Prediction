@@ -1,4 +1,3 @@
-cd ~/Desktop/"MULTI-ORGAN FAILURE" && cat > README.md << 'MDEOF'
 <div align="center">
 
 # 🏥 ICU Deterioration Prediction
