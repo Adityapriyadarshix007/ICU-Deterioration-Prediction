@@ -194,7 +194,7 @@ export const MODEL_INFO = {
   specificity: 75.42,
   dataset: 'MIMIC-IV v3.1',
   samples: 54544,
-  features: 113,
+  features: 160,
   predictionWindow: '6-18 hours (ΔSOFA ≥ 2)',
   trainingDate: 'September 2026',
   calibration: 'Isotonic Regression',
