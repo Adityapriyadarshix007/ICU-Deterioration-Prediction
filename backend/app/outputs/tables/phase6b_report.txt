@@ -1,0 +1,71 @@
+======================================================================
+PHASE 6b: CNN-LSTM REPORT (RIGOROUS EVALUATION)
+======================================================================
+Feature window: 0-6h
+Outcome: ΔSOFA ≥ 2 at 6-18h
+Sequence: T=12 × C=40
+Device: mps
+Seed: 42, deterministic=True
+
+EVALUATION PROTOCOL:
+  Step 1: 5-fold CV (evaluated on SKF val fold)       [secondary]
+  Step 2: Ensemble of 5 fold models on test set       [secondary]
+  Step 3: Single model on 100% train → test set       [PRIMARY]
+
+  PRIMARY COMPARISON: Step 3 (single DL model) vs. tree model
+
+ARCHITECTURE:
+  Conv1D: [64, 32], kernel=2
+  LSTM: 128 units
+  Attention: 64 units
+  Dense: 32 units, dropout=0.3
+
+STEP 1 — TRUE CV METRICS (mean ± std across 5 folds):
+  recall      : 0.6224 ± 0.0284
+  auroc       : 0.7580 ± 0.0070
+  auprc       : 0.5109 ± 0.0100
+  precision   : 0.3677 ± 0.0120
+  f1          : 0.4618 ± 0.0046
+  accuracy    : 0.7256 ± 0.0140
+  brier       : 0.1864 ± 0.0073
+  specificity : 0.7496 ± 0.0236
+  npv         : 0.8950 ± 0.0044
+
+STEP 2 — ENSEMBLE TEST METRICS (5-model averaged):
+  recall      : 0.6523
+  auroc       : 0.7826
+  auprc       : 0.5539
+  precision   : 0.3916
+  f1          : 0.4894
+  accuracy    : 0.7426
+  brier       : 0.1782
+  specificity : 0.7637
+  npv         : 0.9040
+
+STEP 3 — SINGLE FINAL MODEL TEST METRICS [PRIMARY]:
+  recall      : 0.7036
+  auroc       : 0.7727
+  auprc       : 0.5333
+  precision   : 0.3518
+  f1          : 0.4691
+  accuracy    : 0.6988
+  brier       : 0.2065
+  specificity : 0.6977
+  npv         : 0.9099
+
+STEP 4 — COMPARISON (single DL vs. tree):
+  metric              tree          dl           Δ
+  recall            0.6739      0.7036     +0.0297
+  auroc             0.8000      0.7727     -0.0273
+  auprc             0.5701      0.5333     -0.0368
+  precision         0.3900      0.3518     -0.0382
+  f1                0.4941      0.4691     -0.0250
+  brier             0.1701      0.2065     +0.0364
+
+Per-fold CV details:
+  recall    auroc    auprc  precision       f1  accuracy    brier  specificity      npv  fold  best_epoch  best_val_auprc
+0.670111 0.763511 0.523948   0.353607 0.462932  0.705953 0.197155     0.714312 0.902765     0           4        0.526633
+0.624006 0.755305 0.512120   0.362252 0.458394  0.721137 0.183574     0.743789 0.894537     1           5        0.506180
+0.615262 0.764446 0.511771   0.362529 0.456233  0.722640 0.181680     0.747683 0.892849     2           6        0.515109
+0.601749 0.759319 0.510961   0.382903 0.468006  0.741281 0.190349     0.773823 0.892834     3           5        0.537774
+0.600954 0.747394 0.495887   0.377246 0.463519  0.736921 0.179408     0.768632 0.891997     4           8        0.533919

@@ -5,7 +5,7 @@ Google OAuth 2.0 authentication handler.
 import httpx
 from typing import Optional, Dict, Any
 from fastapi import HTTPException, status
-from app.config import settings
+from app.config_api import settings
 import logging
 
 logger = logging.getLogger(__name__)

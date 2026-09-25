@@ -1,0 +1,39 @@
+============================================================
+MISSINGNESS ANALYSIS REPORT
+============================================================
+
+DATA SOURCE:
+  Feature window: 0-6 hours
+  Total samples: 46,362
+  Total features: 27
+  Features with missing values: 14
+  Missing cells: 41,358 (3.30%)
+
+------------------------------------------------------------
+MISSINGNESS GROUPS:
+  Total groups: 6
+  respiratory_rate_mean: 2 features
+    → respiratory_rate_mean, rr_mean
+  spo2_min_x: 8 features
+    → spo2_min_x, spo2_max_x, spo2_mean_x, spo2_last_x, spo2_min_y, spo2_max_y, spo2_mean_y, spo2_last_y
+
+------------------------------------------------------------
+MISSINGNESS MECHANISMS (BY GROUP):
+  MNAR: 6 groups (100.0%)
+
+Detailed Classification (By Group):
+  dbp_mean: MNAR (AUC=0.991, size=1)
+  respiratory_rate_mean: MNAR (AUC=0.932, size=2)
+    Members: respiratory_rate_mean, rr_mean
+  spo2_min_x: MNAR (AUC=0.977, size=8)
+    Members: spo2_min_x, spo2_max_x, spo2_mean_x, spo2_last_x, spo2_min_y, spo2_max_y, spo2_mean_y, spo2_last_y
+  map_mean: MNAR (AUC=0.998, size=1)
+  temperature_mean: MNAR (AUC=0.852, size=1)
+  sbp_mean: MNAR (AUC=0.996, size=1)
+
+============================================================
+KEY FINDINGS:
+  • Features with identical missingness patterns were grouped
+  • Missingness mechanisms classified BY GROUP, not per feature
+  • This prevents circular reasoning (AUC=1.0)
+============================================================

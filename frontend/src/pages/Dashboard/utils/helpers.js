@@ -76,14 +76,17 @@ export const getAlertLevel = (score) => {
 
 export const validateVitals = (vitals) => {
   const errors = [];
-  
+
+  // All vitals/labs are optional. The backend imputes any missing field
+  // (median fill + missingness mask). Only sanity-check the values that
+  // the user actually provides.
   Object.entries(vitals).forEach(([key, value]) => {
     const range = CLINICAL_RANGES[key];
     if (!range) return;
-    
-    if (value === '' || value === null || value === undefined) {
-      errors.push(`${range.label} is required`);
-      return;
+
+    const isBlank = (value === '' || value === null || value === undefined);
+    if (isBlank) {
+      return;   // blank = fine, backend will impute
     }
     
     const num = parseFloat(value);

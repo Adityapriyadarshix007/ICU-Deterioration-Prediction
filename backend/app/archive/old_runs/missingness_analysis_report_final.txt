@@ -1,0 +1,43 @@
+============================================================
+MISSINGNESS ANALYSIS REPORT (FINAL - REALISTIC MIXTURE)
+============================================================
+
+DATA SUMMARY:
+  Samples: 46,362
+  Features: 27
+  Features with missing values: 14
+  Missing cells: 41,358 (3.30%)
+
+------------------------------------------------------------
+MISSINGNESS GROUPS:
+  respiratory_rate_mean: 2 features
+    → respiratory_rate_mean, rr_mean
+  spo2_min_x: 8 features
+    → spo2_min_x, spo2_max_x, spo2_mean_x, spo2_last_x, spo2_min_y, spo2_max_y, spo2_mean_y, spo2_last_y
+
+------------------------------------------------------------
+CLASSIFICATION RESULTS (REALISTIC MIXTURE):
+  MAR: 6 features (100.0%)
+
+DETAILED RESULTS:
+  dbp_mean: MAR (d=0.248)
+    Moderate effect size, depends on observed features
+  respiratory_rate_mean: MAR (d=0.207)
+    Moderate effect size, depends on observed features
+  spo2_min_x: MAR (d=0.208)
+    Moderate effect size, depends on observed features
+  map_mean: MAR (d=0.226)
+    Moderate effect size, depends on observed features
+  temperature_mean: MAR (d=0.197)
+    Moderate effect size, depends on observed features
+  sbp_mean: MAR (d=0.248)
+    Moderate effect size, depends on observed features
+
+============================================================
+RECOMMENDATIONS:
+  1. Use multiple imputation (MICE) for MAR features
+  2. Keep missingness indicators for all features
+  3. Monitor MCAR features (can use simple imputation)
+  4. MNAR features need special handling
+  5. CatBoost handles all mechanisms well
+============================================================

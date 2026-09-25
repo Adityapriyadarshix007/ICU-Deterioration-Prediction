@@ -1,0 +1,36 @@
+======================================================================
+PHASE 6: RECOMMENDATIONS
+======================================================================
+
+PHASE 5 FINDINGS (inputs to this phase):
+  MCAR test: reject_MCAR (p=0.0)
+  Missingness-outcome significant: 68/82
+
+DATA SOURCE:
+  Feature window: 0-6h
+  Outcome:        ΔSOFA ≥ 2 at 6-18h
+  No data leakage: features END before outcome BEGINS
+
+BEST (imputation, model) PAIR:
+  Imputation: ZERO
+  Model:      LIGHTGBM
+  Recall:     0.2550
+  AUC:        0.8062
+
+MASK EFFECT (isolated, same imputation & model):
+  No meaningful effect
+  Include masks: False
+
+ROBUSTNESS:
+  Robust
+
+RECOMMENDED APPROACH:
+  1. Imputation: ZERO
+  2. Model:      LIGHTGBM
+  3. Masks:      exclude
+
+NOTE:
+  MCAR rejection indicates missingness is not completely
+  random. It does not imply any particular imputation
+  method is invalid. Multiple methods are compared
+  empirically above; the best is selected by recall.

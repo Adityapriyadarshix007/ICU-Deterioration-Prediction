@@ -177,7 +177,7 @@ export const exportStructuredPDF = async (predictionData) => {
           hour: '2-digit',
           minute: '2-digit'
         }) : 'Just now'],
-      ['Prediction Window:', '24 Hours']
+      ['Prediction Window:', '6-18 Hours (ΔSOFA ≥ 2)']
     ];
 
     autoTable(pdf, {
@@ -503,7 +503,7 @@ export const exportStructuredPDF = async (predictionData) => {
       
       const footerLeft = [
         `ICU Predictor v1.0`,
-        `Model: CatBoost | Dataset: MIMIC-IV v3.1`
+        `Model: LightGBM | Dataset: MIMIC-IV v3.1`
       ].join('  •  ');
       pdf.text(footerLeft, 20, pageHeight - 7);
 

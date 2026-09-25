@@ -1,0 +1,20 @@
+Step 0: Feasibility Test for CNN-LSTM
+============================================================
+Bins: 30 min | T = 12 | Window: 0-6h
+Cohort: 54,503 patients
+  Progressors: 10,287
+  Stable:      44,216
+
+Signal scores per feature:
+         feature  level_sep_mean  level_sep_max  level_sep_std  traj_slope_raw  traj_slope_norm
+      heart_rate        0.228633       0.265735       0.028496        0.029818         0.059203
+            fio2        0.203376       0.667027       0.180707        1.566471         0.248288
+       gcs_total        0.203103       0.344824       0.089047       -0.046023         0.121006
+respiratory_rate        0.194152       0.277781       0.088389       -4.944280         0.061286
+            spo2        0.102583       0.226294       0.086373       -0.105448         0.166724
+             map        0.027198       0.059855       0.015071        0.238384         0.035468
+
+Max level separation: 0.2286
+Max trajectory slope:  0.2483
+Verdict: STRONG temporal signal — CNN-LSTM is worth building.
+Decision: build_dl

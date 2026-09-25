@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-09-24T22:19:35.526676",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python_version": "3.11.16 (main, Aug 12 2026, 23:03:19) [Clang 21.0.0 (clang-2100.1.1.101)]",
+  "working_directory": "/Users/adityapriyadarshi/Desktop/MULTI-ORGAN FAILURE/backend",
+  "data_directory": "/Users/adityapriyadarshi/Desktop/MULTI-ORGAN FAILURE/backend/data",
+  "output_directory": "/Users/adityapriyadarshi/Desktop/MULTI-ORGAN FAILURE/backend/app/outputs",
+  "mimic_version": "3.1",
+  "eicu_version": "2.0",
+  "target": "Pure \u0394SOFA \u2265 2 (no mortality)",
+  "window_configuration": {
+    "min_icu_stay_hours": 24,
+    "feature_window_hours": 6,
+    "feature_window_description": "0-6h from ICU admission (for prediction)",
+    "prediction_start_hour": 6,
+    "prediction_end_hour": 18,
+    "outcome_window_description": "6-18h from ICU admission (what we predict)",
+    "data_leakage_prevention": "Features END before Outcome BEGINS",
+    "reference_point": "ICU intime (both windows)"
+  },
+  "imputation_strategies": {
+    "time_series": [
+      "none",
+      "locf",
+      "linear"
+    ],
+    "tabular": [
+      "zero",
+      "median",
+      "knn",
+      "ice"
+    ]
+  },
+  "models": [
+    "catboost",
+    "xgboost",
+    "lightgbm",
+    "cnn_lstm"
+  ],
+  "package_versions": {
+    "duckdb": "1.5.5",
+    "pandas": "3.0.5",
+    "numpy": "2.4.6",
+    "scikit_learn": "1.6.1",
+    "catboost": "1.2.10",
+    "xgboost": "3.2.0",
+    "lightgbm": "4.7.0"
+  }
+}

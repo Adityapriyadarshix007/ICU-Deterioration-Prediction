@@ -11,7 +11,7 @@ from bson import ObjectId
 import logging
 import bcrypt
 
-from app.config import settings
+from app.config_api import settings
 from app.database import Database
 
 logger = logging.getLogger(__name__)

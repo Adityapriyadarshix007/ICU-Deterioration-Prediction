@@ -1,0 +1,7 @@
+heart_rate
+respiratory_rate
+spo2
+map
+temperature
+sbp
+dbp

@@ -1,0 +1,42 @@
+======================================================================
+PHASE 6 ALT MODEL — FORCED REFIT REPORT
+======================================================================
+Timestamp: 2026-09-22 21:15:29.856116
+
+Combination:
+  Imputation:   median
+  Model:        lightgbm
+  Mask variant: with_masks
+  n_features:   160
+
+Purpose:
+  Test whether median imputation (instead of zero)
+  removes the FiO2 missingness SHAP artifact observed
+  in the primary model.
+
+ALT model test metrics:
+  recall      : 0.6595
+  auroc       : 0.7954
+  auprc       : 0.5658
+  precision   : 0.3857
+  f1          : 0.4867
+  accuracy    : 0.7370
+  brier       : 0.1704
+  specificity : 0.7550
+  npv         : 0.9048
+
+PRIMARY model test metrics:
+  auroc       : 0.8000
+  auprc       : 0.5701
+  recall      : 0.6739
+  precision   : 0.3900
+  f1          : 0.4941
+  brier       : 0.1701
+
+Delta (ALT - PRIMARY):
+  auroc       : -0.0046
+  auprc       : -0.0043
+  recall      : -0.0144
+  precision   : -0.0043
+  f1          : -0.0074
+  brier       : +0.0003

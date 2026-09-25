@@ -1,0 +1,23 @@
+======================================================================
+PHASE 8b: EXTERNAL VALIDATION (HARMONIZED MODEL)
+======================================================================
+Cohort: 98,883
+Prevalence: 17.43%
+
+MIMIC test (harmonized model):
+  recall: 0.6757
+  auroc: 0.7976
+  auprc: 0.5647
+  precision: 0.3892
+  f1: 0.4939
+  brier: 0.1711
+  specificity: 0.7527
+
+eICU external (harmonized model):
+  recall: 0.3163
+  auroc: 0.5512
+  auprc: 0.2056
+  precision: 0.2133
+  f1: 0.2548
+  brier: 0.2141
+  specificity: 0.7538

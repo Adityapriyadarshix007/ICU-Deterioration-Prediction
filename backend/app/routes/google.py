@@ -10,7 +10,7 @@ import httpx
 
 from app import auth, schemas
 from app.database import Database
-from app.config import settings
+from app.config_api import settings
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

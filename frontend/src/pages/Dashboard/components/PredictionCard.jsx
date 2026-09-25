@@ -138,7 +138,7 @@ const PredictionCard = ({ prediction, onExport, onPrint }) => {
               <span>Generated: {prediction.prediction_time ? new Date(prediction.prediction_time).toLocaleString() : 'Just now'}</span>
             </div>
             <div className="mt-1 flex items-center gap-2 text-xs text-gray-400">
-              <span>Prediction Horizon: 24 hours</span>
+              <span>Prediction Horizon: 6-18 hours (ΔSOFA ≥ 2)</span>
             </div>
             <div className="mt-3 p-2 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between">

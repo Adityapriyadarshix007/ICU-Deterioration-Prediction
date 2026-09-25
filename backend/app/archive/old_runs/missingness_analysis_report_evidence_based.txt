@@ -1,0 +1,133 @@
+============================================================
+MISSINGNESS ANALYSIS REPORT
+Evidence-Based Classification (Formal/Practical Hybrid)
+============================================================
+
+DATA SOURCE:
+  Feature window: 0-6 hours (from Phase 3)
+  Outcome: ΔSOFA ≥ 2 at 6-18 hours (from Phase 2)
+  Data: X_train.csv from Phase 4 (NO DATA LEAKAGE)
+
+DATA SUMMARY:
+  Samples: 46,362
+  Features: 118
+  Features with missing values: 87
+  Missing cells: 1,013,236 (18.52%)
+
+------------------------------------------------------------
+STEP 1: VISUAL & DESCRIPTIVE AUDIT
+------------------------------------------------------------
+  Features with <5% missing: 33
+  Features with 5-15% missing: 6
+  Features with >15% missing: 48
+
+------------------------------------------------------------
+STEP 2: LITTLE'S MCAR TEST
+------------------------------------------------------------
+  Result: p ≤ 0.05 → Data is NOT MCAR
+  → Missingness depends on observed or unobserved factors
+
+------------------------------------------------------------
+STEP 3: MAR vs MNAR INVESTIGATION
+------------------------------------------------------------
+  Statistical Evidence: Moderate effect sizes (d ≈ 0.2-0.25)
+  Domain Knowledge: ICU data is protocol-driven
+  Published Evidence: Zhu et al. (2025) - SOFA data missing during crisis
+
+FINAL CLASSIFICATION:
+  MAR: 23 features (69.7%)
+  MCAR: 6 features (18.2%)
+  MNAR: 4 features (12.1%)
+
+DETAILED RESULTS:
+  heart_rate_mean: MCAR
+    Evidence: Low missing rate - likely random monitoring interruptions
+  heart_rate_slope: MCAR
+    Evidence: Low missing rate - likely random monitoring interruptions
+  respiratory_rate_mean: MCAR
+    Evidence: Very low missing rate - likely random measurement issues
+  respiratory_rate_slope: MCAR
+    Evidence: Very low missing rate - likely random measurement issues
+  spo2_min_x: MCAR
+    Evidence: Low missing rate - likely random monitoring interruptions
+  spo2_slope_x: MCAR
+    Evidence: Low missing rate - likely random monitoring interruptions
+  temperature_mean: MAR
+    Evidence: Moderate missing rate in temperature - often not measured in stable patients
+  temperature_slope: MAR
+    Evidence: Moderate missing rate in temperature - often not measured in stable patients
+  sbp_mean: MAR
+    Evidence: High missing rate in BP measurements - common in ICU when patients are stable or unstable
+  sbp_slope: MAR
+    Evidence: High missing rate in BP measurements - common in ICU when patients are stable or unstable
+  dbp_mean: MAR
+    Evidence: High missing rate in BP measurements - common in ICU when patients are stable or unstable
+  dbp_slope: MAR
+    Evidence: High missing rate in BP measurements - common in ICU when patients are stable or unstable
+  gcs_eyes_min: MAR
+    Evidence: Statistical evidence suggests MAR - GCS is usually measured
+  gcs_eyes_slope: MNAR
+    Evidence: GCS missing when patient sedated or paralyzed - informative missingness
+  gcs_verbal_min: MAR
+    Evidence: Statistical evidence suggests MAR - GCS is usually measured
+  gcs_verbal_slope: MNAR
+    Evidence: GCS missing when patient sedated or paralyzed - informative missingness
+  gcs_motor_min: MAR
+    Evidence: Statistical evidence suggests MAR - GCS is usually measured
+  gcs_motor_slope: MNAR
+    Evidence: GCS missing when patient sedated or paralyzed - informative missingness
+  gcs_total_min: MNAR
+    Evidence: GCS missing when patient sedated or paralyzed - informative missingness
+  fio2_min: MAR
+    Evidence: Statistical evidence suggests MAR - clinical context supports this mechanism
+  creatinine_worst: MAR
+    Evidence: Lab value missing due to ordering frequency - depends on patient condition
+  platelets_worst: MAR
+    Evidence: Lab value missing due to ordering frequency - depends on patient condition
+  bun_worst: MAR
+    Evidence: Lab value missing due to ordering frequency - depends on patient condition
+  wbc_worst: MAR
+    Evidence: Lab value missing due to ordering frequency - depends on patient condition
+  hematocrit_worst: MAR
+    Evidence: Statistical evidence suggests MAR - clinical context supports this mechanism
+  sodium_worst: MAR
+    Evidence: Lab value missing due to ordering frequency - depends on patient condition
+  potassium_worst: MAR
+    Evidence: Lab value missing due to ordering frequency - depends on patient condition
+  chloride_worst: MAR
+    Evidence: Lab value missing due to ordering frequency - depends on patient condition
+  bicarbonate_worst: MAR
+    Evidence: Lab value missing due to ordering frequency - depends on patient condition
+  glucose_worst: MAR
+    Evidence: Lab value missing due to ordering frequency - depends on patient condition
+  inr_worst: MAR
+    Evidence: Statistical evidence suggests MAR - clinical context supports this mechanism
+  ptt_worst: MAR
+    Evidence: Statistical evidence suggests MAR - clinical context supports this mechanism
+  pt_worst: MAR
+    Evidence: Statistical evidence suggests MAR - clinical context supports this mechanism
+
+------------------------------------------------------------
+STEP 5: MECHANISM DISTRIBUTION VISUALIZATION
+------------------------------------------------------------
+  Pie chart saved to: /Users/adityapriyadarshi/Desktop/MULTI-ORGAN FAILURE/backend/app/outputs/figures/mechanism_distribution.png
+  Shows MCAR/MAR/MNAR distribution with percentages
+
+------------------------------------------------------------
+ALL VISUALIZATIONS GENERATED:
+  • /Users/adityapriyadarshi/Desktop/MULTI-ORGAN FAILURE/backend/app/outputs/figures/step1_missingness_audit.png - Complete audit (4 subplots)
+  • /Users/adityapriyadarshi/Desktop/MULTI-ORGAN FAILURE/backend/app/outputs/figures/missingness_heatmap.png - Standalone heatmap
+  • /Users/adityapriyadarshi/Desktop/MULTI-ORGAN FAILURE/backend/app/outputs/figures/missingness_cooccurrence.png - Standalone co-occurrence
+  • /Users/adityapriyadarshi/Desktop/MULTI-ORGAN FAILURE/backend/app/outputs/figures/missing_rates_bar.png - Missing rates bar chart
+  • /Users/adityapriyadarshi/Desktop/MULTI-ORGAN FAILURE/backend/app/outputs/figures/missing_rates_distribution.png - Distribution histogram
+  • /Users/adityapriyadarshi/Desktop/MULTI-ORGAN FAILURE/backend/app/outputs/figures/mechanism_distribution.png - MCAR/MAR/MNAR pie chart
+
+============================================================
+RECOMMENDATIONS FOR PHASE 6 & 7:
+  1. Since data is primarily MAR with some MNAR:
+     → Use multiple imputation (MICE) with sensitivity analysis
+  2. Missingness is informative:
+     → Keep missingness indicators as features
+  3. CatBoost handles missingness natively
+  4. Compare imputation methods in Phase 6
+============================================================

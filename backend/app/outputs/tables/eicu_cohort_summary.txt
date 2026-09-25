@@ -1,0 +1,25 @@
+============================================================
+eICU COHORT SUMMARY
+============================================================
+
+Total patients:     98,883
+Unique uniquepid:   98,883
+Unique hospitals:   208
+
+Exclusion counts:
+  age_lt_18: 625
+  stay_lt_min_hours: 67,623
+  invalid_offsets: 0
+  req1_transfer_in: 7,813
+  req3_transfer_out: 2,658
+  not_first_stay: 23,257
+  early_death: 0
+
+ICU LOS distribution (hours):
+  min:  24.0
+  p25:  35.2
+  med:  49.6
+  p75:  85.7
+  max:  6192.8
+
+NOTE: unitdischargeoffset = ICU LOS in minutes (this extract).

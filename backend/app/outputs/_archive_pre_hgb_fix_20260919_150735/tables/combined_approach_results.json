@@ -1,0 +1,10 @@
+{
+  "imputation": "zero",
+  "model": "lightgbm",
+  "recall": 0.25495049504950495,
+  "auc": 0.8084576486128661,
+  "f1": 0.3850467289719626,
+  "delta_recall_vs_no_masks": 0.0,
+  "delta_auc_vs_no_masks": 0.00229392037589371,
+  "delta_f1_vs_no_masks": -0.001626194538126513
+}

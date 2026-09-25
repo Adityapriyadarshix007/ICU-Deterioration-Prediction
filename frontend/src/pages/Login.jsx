@@ -342,9 +342,9 @@ function Login() {
             <div className="space-y-3 text-left max-w-md mx-auto">
               {[
                 { icon: Brain, text: 'AI-Powered Clinical Decision Support', delay: 0.2 },
-                { icon: ShieldCheck, text: 'CatBoost Model with SHAP Explainability', delay: 0.4 },
-                { icon: Database, text: 'Trained on 57,515 MIMIC-IV ICU Stays', delay: 0.6 },
-                { icon: HeartPulse, text: 'Predict 12-18 Hours Before Deterioration', delay: 0.8 }
+                { icon: ShieldCheck, text: 'LightGBM Model with SHAP Explainability', delay: 0.4 },
+                { icon: Database, text: 'Trained on 54,544 MIMIC-IV ICU Stays', delay: 0.6 },
+                { icon: HeartPulse, text: 'Predict 6-18 Hours Before Deterioration', delay: 0.8 }
               ].map((item, index) => (
                 <motion.div
                   key={index}
@@ -373,21 +373,21 @@ function Login() {
             >
               <div className="text-center">
                 <p className="text-3xl font-bold text-white">
-                  <CountUp start={0} end={70.13} duration={2.5} decimals={2} suffix="%" />
+                  <CountUp start={0} end={80.00} duration={2.5} decimals={2} suffix="%" />
                 </p>
                 <p className="text-sm text-blue-200 font-medium">AUC-ROC</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-white">
-                  <CountUp start={0} end={68.47} duration={2.5} decimals={2} suffix="%" />
+                  <CountUp start={0} end={67.39} duration={2.5} decimals={2} suffix="%" />
                 </p>
                 <p className="text-sm text-blue-200 font-medium">Sensitivity</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-white">
-                  <CountUp start={0} end={62.03} duration={2.5} decimals={2} suffix="%" />
+                  <CountUp start={0} end={57.01} duration={2.5} decimals={2} suffix="%" />
                 </p>
-                <p className="text-sm text-blue-200 font-medium">Specificity</p>
+                <p className="text-sm text-blue-200 font-medium">AUPRC</p>
               </div>
             </motion.div>
           </div>
@@ -396,7 +396,7 @@ function Login() {
         <div className="relative z-10">
           <div className="flex flex-wrap items-center justify-center gap-4 text-white/60 text-xs">
             <span className="flex items-center gap-1">
-              <CheckCircle className="w-3 h-3 text-green-400" /> CatBoost AI
+              <CheckCircle className="w-3 h-3 text-green-400" /> LightGBM AI
             </span>
             <span className="flex items-center gap-1">
               <CheckCircle className="w-3 h-3 text-green-400" /> SHAP Explainability

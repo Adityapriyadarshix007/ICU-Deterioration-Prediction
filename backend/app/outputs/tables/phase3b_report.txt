@@ -1,0 +1,67 @@
+============================================================
+PHASE 3b: SEQUENCE EXTRACTION REPORT
+============================================================
+Window: 0-6h | Bins: 30 min | T = 12
+Features: 20 | Channels: 40
+Tensor shape: (n, 12, 40)
+
+Cleaning pipeline:
+  1. Physiological bounds (drop out-of-range)
+  2. FiO2 % -> fraction conversion
+  3. Winsorization at 1%/99% (train thresholds)
+  4. Z-score normalization (train stats)
+
+Train: 33,260 patients
+Test:  5,870 patients
+
+Coverage (% of bins observed):
+         feature  train_coverage_pct  test_coverage_pct
+      heart_rate           51.057827          50.941229
+respiratory_rate           50.323963          50.265473
+            spo2           50.265837          50.215787
+             map           49.161154          49.048835
+       gcs_total           18.172228          18.168654
+            fio2            9.014582           9.135435
+            pao2            8.862498           8.858603
+      creatinine            6.403588           6.348666
+         lactate            7.007918           6.946337
+       bilirubin            2.009421           1.942078
+       platelets            7.483964           7.407723
+             wbc            7.339898           7.254401
+      hemoglobin            7.380988           7.281374
+          sodium            5.866406           5.861726
+       potassium            5.890459           5.877342
+             bun            6.393566           6.338728
+         glucose            5.179645           5.185974
+  norepinephrine            6.633092           6.548836
+     epinephrine            1.336190           1.530380
+        dopamine            0.875927           0.976718
+
+Normalization stats (from train observations):
+         feature       mean        std  winsor_lo  winsor_hi  n_observed_train
+      heart_rate  85.449562  18.996891  48.000000 139.000000            203782
+respiratory_rate  18.880650   5.227458   9.000000  35.000000            200853
+            spo2  97.383331   2.706563  88.000000 100.000000            200621
+             map  80.035637  15.467236  48.000000 125.392708            196212
+       gcs_total  11.543653   4.331760   3.000000  15.000000             72529
+            fio2   0.627451   0.239990   0.300000   1.000000             35979
+            pao2 231.900085 115.863007  56.000000 499.000000             35372
+      creatinine   1.357867   1.299808   0.400000   8.500000             25558
+         lactate   2.709179   1.914883   0.700000  11.400000             27970
+       bilirubin   1.750146   3.140000   0.100000  21.062012              8020
+       platelets 186.778610  90.978584  31.000000 518.000000             29870
+             wbc  12.757584   6.349511   1.900000  36.200001             29295
+      hemoglobin  10.560819   2.108818   6.100000  15.700000             29459
+          sodium 138.021271   5.410665 118.000000 153.871094             23414
+       potassium   4.211019   0.737868   2.700000   6.700000             23510
+             bun  24.811113  20.033720   5.000000 112.000000             25518
+         glucose 158.041901  76.100319  62.000000 496.279297             20673
+  norepinephrine   0.159322   0.132575   0.020001   0.587815             26474
+     epinephrine   0.056870   0.080303   0.010001   0.535308              5333
+        dopamine   8.237460   5.138798   1.999707  20.191467              3496
+
+Notes:
+- Missing bin: value=0.0, mask=0.0
+- Observed bin: value=z-score, mask=1.0
+- GCS total computed only when all 3 components present in same 2-min bucket
+- Vasopressor bins: value = max rate in bin (or amount/duration if rate missing)

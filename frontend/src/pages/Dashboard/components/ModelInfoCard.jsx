@@ -12,7 +12,7 @@ const ModelInfoCard = () => {
           <p className="text-xl font-bold text-blue-600">{MODEL_INFO.name}</p>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{MODEL_INFO.version}</span>
-            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Production</span>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Research Prototype</span>
           </div>
         </div>
 
@@ -22,12 +22,12 @@ const ModelInfoCard = () => {
             <p className="text-lg font-bold text-gray-900">{MODEL_INFO.aucRoc}</p>
           </div>
           <div className="p-3 bg-gray-50 rounded-xl">
-            <p className="text-xs text-gray-500">Threshold</p>
-            <p className="text-lg font-bold text-gray-900">{MODEL_INFO.threshold}</p>
+            <p className="text-xs text-gray-500">AUPRC</p>
+            <p className="text-lg font-bold text-purple-600">{MODEL_INFO.auprc}</p>
           </div>
           <div className="p-3 bg-gray-50 rounded-xl">
-            <p className="text-xs text-gray-500">Sensitivity</p>
-            <p className="text-lg font-bold text-green-600">{MODEL_INFO.sensitivity}%</p>
+            <p className="text-xs text-gray-500">Threshold</p>
+            <p className="text-lg font-bold text-gray-900">{MODEL_INFO.threshold}</p>
           </div>
           <div className="p-3 bg-gray-50 rounded-xl">
             <p className="text-xs text-gray-500">Specificity</p>

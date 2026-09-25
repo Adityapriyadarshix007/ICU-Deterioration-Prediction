@@ -162,7 +162,7 @@ function ChangePassword() {
 
           <div className="relative z-10">
             <div className="flex flex-wrap items-center justify-center gap-4 text-white/60 text-xs">
-              <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-400" /> CatBoost AI</span>
+              <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-400" /> LightGBM AI</span>
               <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-400" /> SHAP Explainability</span>
               <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-400" /> MIMIC-IV Dataset</span>
             </div>
@@ -261,9 +261,9 @@ function ChangePassword() {
             <div className="space-y-3 text-left max-w-md mx-auto">
               {[
                 { icon: Brain, text: 'AI-Powered Clinical Decision Support', delay: 0.2 },
-                { icon: ShieldCheck, text: 'CatBoost Model with SHAP Explainability', delay: 0.4 },
-                { icon: Brain, text: 'Trained on 57,515 MIMIC-IV ICU Stays', delay: 0.6 },
-                { icon: HeartPulse, text: 'Predict 12-18 Hours Before Deterioration', delay: 0.8 }
+                { icon: ShieldCheck, text: 'LightGBM Model with SHAP Explainability', delay: 0.4 },
+                { icon: Brain, text: 'Trained on 54,544 MIMIC-IV ICU Stays', delay: 0.6 },
+                { icon: HeartPulse, text: 'Predict 6-18 Hours Before Deterioration', delay: 0.8 }
               ].map((item, index) => (
                 <motion.div
                   key={index}
@@ -282,7 +282,7 @@ function ChangePassword() {
 
         <div className="relative z-10">
           <div className="flex flex-wrap items-center justify-center gap-4 text-white/60 text-xs">
-            <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-400" /> CatBoost AI</span>
+            <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-400" /> LightGBM AI</span>
             <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-400" /> SHAP Explainability</span>
             <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-400" /> MIMIC-IV Dataset</span>
             <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-400" /> FastAPI Backend</span>

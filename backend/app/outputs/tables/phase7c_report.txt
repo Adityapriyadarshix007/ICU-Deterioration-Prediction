@@ -1,0 +1,17 @@
+======================================================================
+PHASE 7c: STATISTICAL COMPARISON
+======================================================================
+n = 5870  |  prevalence = 0.1891
+
+PRIMARY: Tree vs. single CNN-LSTM
+  AUROC   tree=0.8000  dl=0.7727  Δ=+0.0273  [+0.0163, +0.0383]  p=1.13e-06
+  AUPRC   tree=0.5701  dl=0.5333  Δ=+0.0368  [+0.0215, +0.0523]  p=2.37e-06
+  McNemar b=770, c=453, p=1.02e-19
+
+INTERPRETATION:
+  → Tree significantly better on all three tests.
+
+SECONDARY: Tree vs. 5-fold ensemble
+  AUROC   Δ=+0.0174  p=0.0008
+  AUPRC   Δ=+0.0163  p=0.0213
+  McNemar b=672, c=442, p=5.77e-12

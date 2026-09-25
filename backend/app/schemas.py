@@ -106,41 +106,89 @@ class TokenData(BaseModel):
 # ============================================================
 
 class PatientData(BaseModel):
-    """Patient data for prediction - includes all demographics and vitals"""
+    """Patient data for prediction - demographics + vitals + labs.
+
+    All clinical fields are OPTIONAL. Missing fields are handled by the
+    model's imputation pipeline (median fill + missingness mask).
+    """
+
+    # --- identifiers (not model features) ---
     patient_id: str
-    patient_name: str = Field(..., min_length=1, description="Patient's full name")
-    age: int = Field(..., ge=18, le=120, description="Patient's age in years")
-    gender: str = Field(..., description="Patient's gender (Male/Female/Other)")
-    room: str = Field(..., min_length=1, description="ICU room number")
-    diagnosis: str = Field(..., min_length=1, description="Primary diagnosis")
-    heart_rate: float = Field(..., ge=0, le=300, description="Heart rate in bpm")
-    sbp: float = Field(..., ge=0, le=300, description="Systolic blood pressure in mmHg")
-    dbp: float = Field(..., ge=0, le=200, description="Diastolic blood pressure in mmHg")
-    gcs: float = Field(..., ge=3, le=15, description="Glasgow Coma Scale score")
-    lactate: float = Field(..., ge=0, le=25, description="Lactate level in mmol/L")
-    urine_output: float = Field(..., ge=0, le=500, description="Urine output in mL/hr")
-    fio2: float = Field(..., ge=15, le=100, description="Fraction of inspired oxygen (%)")
-    creatinine: float = Field(..., ge=0, le=20, description="Creatinine level in mg/dL")
-    status: Optional[str] = Field(default="Active", description="Patient status")
-    
-    @validator('gender')
-    def validate_gender(cls, v):
-        allowed = ['Male', 'Female', 'Other']
-        if v not in allowed:
-            raise ValueError(f'Gender must be one of {allowed}')
-        return v
-    
-    @validator('gcs')
-    def validate_gcs(cls, v):
-        if v < 3 or v > 15:
-            raise ValueError('GCS must be between 3 and 15')
-        return v
-    
-    @validator('heart_rate')
-    def validate_heart_rate(cls, v):
-        if v < 20 or v > 250:
-            raise ValueError('Heart rate must be between 20 and 250 bpm')
-        return v
+    patient_name: str = Field(..., min_length=1)
+
+    # --- demographics ---
+    age: Optional[float] = Field(default=None, ge=0, le=120)
+    gender: Optional[str] = Field(default=None, description="Male / Female / Other")
+    room: Optional[str] = None
+    diagnosis: Optional[str] = None
+    status: Optional[str] = Field(default="Active")
+    admission_type: Optional[str] = Field(
+        default=None,
+        description=("One of: AMBULATORY OBSERVATION, DIRECT EMER., "
+                     "DIRECT OBSERVATION, ELECTIVE, EU OBSERVATION, "
+                     "EW EMER., OBSERVATION ADMIT, "
+                     "SURGICAL SAME DAY ADMISSION, URGENT")
+    )
+
+    # --- vitals ---
+    heart_rate: Optional[float] = Field(default=None, ge=0, le=300)
+    respiratory_rate: Optional[float] = Field(default=None, ge=0, le=80)
+    spo2: Optional[float] = Field(default=None, ge=0, le=100)
+    temperature: Optional[float] = Field(default=None, ge=86, le=113,
+                                          description="Fahrenheit")
+    sbp: Optional[float] = Field(default=None, ge=0, le=300)
+    dbp: Optional[float] = Field(default=None, ge=0, le=200)
+    map: Optional[float] = Field(default=None, ge=0, le=250)
+
+    # --- respiratory ---
+    fio2: Optional[float] = Field(default=None, ge=15, le=100,
+                                   description="Percent (e.g. 40 for 40%)")
+    pao2: Optional[float] = Field(default=None, ge=0, le=700)
+
+    # --- neuro (GCS components or total) ---
+    gcs_eyes: Optional[float] = Field(default=None, ge=1, le=4)
+    gcs_verbal: Optional[float] = Field(default=None, ge=0, le=5)
+    gcs_motor: Optional[float] = Field(default=None, ge=1, le=6)
+    gcs_total: Optional[float] = Field(default=None, ge=3, le=15,
+                                        description="Computed if components given")
+
+    # --- labs: chem ---
+    creatinine: Optional[float] = Field(default=None, ge=0, le=30)
+    bun: Optional[float] = Field(default=None, ge=0, le=300)
+    sodium: Optional[float] = Field(default=None, ge=90, le=200)
+    potassium: Optional[float] = Field(default=None, ge=1, le=12)
+    chloride: Optional[float] = Field(default=None, ge=50, le=200)
+    bicarbonate: Optional[float] = Field(default=None, ge=0, le=60)
+    glucose: Optional[float] = Field(default=None, ge=0, le=1500)
+
+    # --- labs: heme/coag ---
+    hemoglobin: Optional[float] = Field(default=None, ge=0, le=25)
+    hematocrit: Optional[float] = Field(default=None, ge=0, le=70)
+    wbc: Optional[float] = Field(default=None, ge=0, le=200)
+    platelets: Optional[float] = Field(default=None, ge=0, le=1500)
+    inr: Optional[float] = Field(default=None, ge=0, le=20)
+    ptt: Optional[float] = Field(default=None, ge=0, le=200)
+
+    # --- labs: liver ---
+    bilirubin: Optional[float] = Field(default=None, ge=0, le=60)
+    alt: Optional[float] = Field(default=None, ge=0, le=5000)
+    ast: Optional[float] = Field(default=None, ge=0, le=5000)
+    lactate: Optional[float] = Field(default=None, ge=0, le=40)
+
+    # --- vasopressors: any flag + max rate ---
+    norepinephrine_any: Optional[bool] = None
+    norepinephrine_max_rate: Optional[float] = Field(default=None, ge=0, le=5)
+    epinephrine_any: Optional[bool] = None
+    epinephrine_max_rate: Optional[float] = Field(default=None, ge=0, le=5)
+    dopamine_any: Optional[bool] = None
+    dopamine_max_rate: Optional[float] = Field(default=None, ge=0, le=50)
+    dobutamine_any: Optional[bool] = None
+    dobutamine_max_rate: Optional[float] = Field(default=None, ge=0, le=50)
+    vasopressin_any: Optional[bool] = None
+    vasopressin_max_rate: Optional[float] = Field(default=None, ge=0, le=5)
+    phenylephrine_any: Optional[bool] = None
+    phenylephrine_max_rate: Optional[float] = Field(default=None, ge=0, le=5)
+
 
 class PredictionResponse(BaseModel):
     patient_id: str

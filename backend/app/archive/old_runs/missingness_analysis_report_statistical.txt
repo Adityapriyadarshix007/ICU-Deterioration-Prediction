@@ -1,0 +1,29 @@
+============================================================
+MISSINGNESS ANALYSIS REPORT (STATISTICAL APPROACH)
+============================================================
+
+DATA SUMMARY:
+  Samples: 46,362
+  Features: 27
+  Features with missing values: 14
+  Missing cells: 41,358 (3.30%)
+
+------------------------------------------------------------
+MISSINGNESS GROUPS:
+  respiratory_rate_mean: 2 features
+    → respiratory_rate_mean, rr_mean
+  spo2_min_x: 8 features
+    → spo2_min_x, spo2_max_x, spo2_mean_x, spo2_last_x, spo2_min_y, spo2_max_y, spo2_mean_y, spo2_last_y
+
+------------------------------------------------------------
+CLASSIFICATION RESULTS:
+  MAR: 6 features (100.0%)
+
+============================================================
+RECOMMENDATIONS FOR PHASE 6:
+  1. Missingness is primarily MAR → Use multiple imputation
+  2. Missingness is informative → Keep as features
+  3. Use MICE with predictive mean matching
+  4. CatBoost handles missingness natively
+  5. Compare imputation strategies on validation set
+============================================================

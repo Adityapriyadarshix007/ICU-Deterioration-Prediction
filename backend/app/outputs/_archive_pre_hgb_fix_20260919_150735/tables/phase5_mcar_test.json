@@ -1,0 +1,10 @@
+{
+  "status": "completed",
+  "method": "little_pyampute",
+  "pyampute_version": "0.0.1",
+  "p_value": 0.0,
+  "n_features_tested": 89,
+  "n_samples": 46327,
+  "conclusion": "reject_MCAR",
+  "scale_caveat": "Little's test is hypersensitive at large sample sizes. Rejection is expected and does not constitute strong evidence against MCAR. MAR and MNAR remain indistinguishable."
+}

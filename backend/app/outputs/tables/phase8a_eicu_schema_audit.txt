@@ -1,0 +1,125 @@
+eICU schema audit
+============================================================
+
+patient
+------------------------------------------------------------
+              column_name column_type null  key default extra
+        patientunitstayid      BIGINT  YES None    None  None
+patienthealthsystemstayid      BIGINT  YES None    None  None
+                   gender     VARCHAR  YES None    None  None
+                      age     VARCHAR  YES None    None  None
+                ethnicity     VARCHAR  YES None    None  None
+               hospitalid      BIGINT  YES None    None  None
+                   wardid      BIGINT  YES None    None  None
+        apacheadmissiondx     VARCHAR  YES None    None  None
+          admissionheight      DOUBLE  YES None    None  None
+      hospitaladmittime24        TIME  YES None    None  None
+      hospitaladmitoffset      BIGINT  YES None    None  None
+      hospitaladmitsource     VARCHAR  YES None    None  None
+    hospitaldischargeyear      BIGINT  YES None    None  None
+  hospitaldischargetime24        TIME  YES None    None  None
+  hospitaldischargeoffset      BIGINT  YES None    None  None
+hospitaldischargelocation     VARCHAR  YES None    None  None
+  hospitaldischargestatus     VARCHAR  YES None    None  None
+                 unittype     VARCHAR  YES None    None  None
+          unitadmittime24        TIME  YES None    None  None
+          unitadmitsource     VARCHAR  YES None    None  None
+          unitvisitnumber      BIGINT  YES None    None  None
+             unitstaytype     VARCHAR  YES None    None  None
+          admissionweight      DOUBLE  YES None    None  None
+          dischargeweight      DOUBLE  YES None    None  None
+      unitdischargetime24        TIME  YES None    None  None
+      unitdischargeoffset      BIGINT  YES None    None  None
+    unitdischargelocation     VARCHAR  YES None    None  None
+      unitdischargestatus     VARCHAR  YES None    None  None
+                uniquepid     VARCHAR  YES None    None  None
+
+vitalPeriodic
+------------------------------------------------------------
+      column_name column_type null  key default extra
+  vitalperiodicid      BIGINT  YES None    None  None
+patientunitstayid      BIGINT  YES None    None  None
+observationoffset      BIGINT  YES None    None  None
+      temperature      DOUBLE  YES None    None  None
+             sao2      BIGINT  YES None    None  None
+        heartrate      BIGINT  YES None    None  None
+      respiration      BIGINT  YES None    None  None
+              cvp      BIGINT  YES None    None  None
+            etco2      BIGINT  YES None    None  None
+ systemicsystolic      BIGINT  YES None    None  None
+systemicdiastolic      BIGINT  YES None    None  None
+     systemicmean      BIGINT  YES None    None  None
+       pasystolic      BIGINT  YES None    None  None
+      padiastolic      BIGINT  YES None    None  None
+           pamean      BIGINT  YES None    None  None
+              st1      DOUBLE  YES None    None  None
+              st2      DOUBLE  YES None    None  None
+              st3      DOUBLE  YES None    None  None
+              icp      BIGINT  YES None    None  None
+
+vitalAperiodic
+------------------------------------------------------------
+         column_name column_type null  key default extra
+    vitalaperiodicid      BIGINT  YES None    None  None
+   patientunitstayid      BIGINT  YES None    None  None
+   observationoffset      BIGINT  YES None    None  None
+ noninvasivesystolic      BIGINT  YES None    None  None
+noninvasivediastolic      BIGINT  YES None    None  None
+     noninvasivemean      BIGINT  YES None    None  None
+                paop      BIGINT  YES None    None  None
+       cardiacoutput      DOUBLE  YES None    None  None
+        cardiacinput      DOUBLE  YES None    None  None
+                 svr      BIGINT  YES None    None  None
+                svri      DOUBLE  YES None    None  None
+                 pvr      BIGINT  YES None    None  None
+                pvri      BIGINT  YES None    None  None
+
+lab
+------------------------------------------------------------
+            column_name column_type null  key default extra
+                  labid      BIGINT  YES None    None  None
+      patientunitstayid      BIGINT  YES None    None  None
+        labresultoffset      BIGINT  YES None    None  None
+              labtypeid      BIGINT  YES None    None  None
+                labname     VARCHAR  YES None    None  None
+              labresult      DOUBLE  YES None    None  None
+          labresulttext     VARCHAR  YES None    None  None
+   labmeasurenamesystem     VARCHAR  YES None    None  None
+labmeasurenameinterface     VARCHAR  YES None    None  None
+ labresultrevisedoffset      BIGINT  YES None    None  None
+
+infusionDrug
+------------------------------------------------------------
+      column_name column_type null  key default extra
+   infusiondrugid      BIGINT  YES None    None  None
+patientunitstayid      BIGINT  YES None    None  None
+   infusionoffset      BIGINT  YES None    None  None
+         drugname     VARCHAR  YES None    None  None
+         drugrate     VARCHAR  YES None    None  None
+     infusionrate     VARCHAR  YES None    None  None
+       drugamount      DOUBLE  YES None    None  None
+    volumeoffluid      DOUBLE  YES None    None  None
+    patientweight      DOUBLE  YES None    None  None
+
+respiratoryCharting
+------------------------------------------------------------
+         column_name column_type null  key default extra
+         respchartid      BIGINT  YES None    None  None
+   patientunitstayid      BIGINT  YES None    None  None
+     respchartoffset      BIGINT  YES None    None  None
+respchartentryoffset      BIGINT  YES None    None  None
+    respcharttypecat     VARCHAR  YES None    None  None
+ respchartvaluelabel     VARCHAR  YES None    None  None
+      respchartvalue     VARCHAR  YES None    None  None
+
+nurseCharting
+------------------------------------------------------------
+                 column_name column_type null  key default extra
+              nursingchartid      BIGINT  YES None    None  None
+           patientunitstayid      BIGINT  YES None    None  None
+          nursingchartoffset      BIGINT  YES None    None  None
+     nursingchartentryoffset      BIGINT  YES None    None  None
+     nursingchartcelltypecat     VARCHAR  YES None    None  None
+nursingchartcelltypevallabel     VARCHAR  YES None    None  None
+ nursingchartcelltypevalname     VARCHAR  YES None    None  None
+           nursingchartvalue     VARCHAR  YES None    None  None

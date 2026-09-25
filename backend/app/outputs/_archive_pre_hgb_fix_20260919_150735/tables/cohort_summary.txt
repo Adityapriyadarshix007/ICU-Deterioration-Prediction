@@ -1,0 +1,30 @@
+============================================================
+COHORT SUMMARY
+============================================================
+FEATURE WINDOW: 0-6h from ICU admission
+OUTCOME WINDOW: 6-18h from ICU admission
+TARGET: Pure ΔSOFA ≥ 2 (NO mortality)
+⚠️  NO DATA LEAKAGE
+============================================================
+
+Total stays: 54,503
+Unique patients: 54,503
+
+Progression Rate (pure ΔSOFA): 18.9%
+
+Feature SOFA: 4.5 ± 3.7
+
+Exclusions:
+  age_lt_18: 0
+  stay_lt_min_hours: 19,629
+  invalid_dates: 0
+  not_first_stay: 20,278
+  early_death: 7
+  late_death: 41
+  total_deaths_excluded: 48
+
+NOTE: Patients who died on or before hour 18 were
+excluded because they cannot have a valid pure ΔSOFA
+outcome. This introduces a survivorship bias.
+
+GCS total: verbal=0 (intubated) treated as verbal=1.

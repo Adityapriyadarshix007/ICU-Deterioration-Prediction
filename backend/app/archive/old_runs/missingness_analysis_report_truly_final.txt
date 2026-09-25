@@ -1,0 +1,49 @@
+============================================================
+MISSINGNESS ANALYSIS REPORT (TRULY FINAL)
+============================================================
+
+DATA SUMMARY:
+  Samples: 46,362
+  Features: 27
+  Features with missing values: 14
+  Missing cells: 41,358 (3.30%)
+
+------------------------------------------------------------
+MISSINGNESS GROUPS:
+  respiratory_rate_mean: 2 features
+    → respiratory_rate_mean, rr_mean
+  spo2_min_x: 8 features
+    → spo2_min_x, spo2_max_x, spo2_mean_x, spo2_last_x, spo2_min_y, spo2_max_y, spo2_mean_y, spo2_last_y
+
+------------------------------------------------------------
+CLASSIFICATION RESULTS (REALISTIC MIXTURE):
+  MAR: 6 features (100.0%)
+
+DETAILED RESULTS:
+  dbp_mean: MAR (rate=25.3%, d=0.248)
+    Moderate effect size with significant associations - depends on observed data
+    Confidence: High
+  respiratory_rate_mean: MAR (rate=2.6%, d=0.207)
+    Moderate effect size with significant associations - depends on observed data
+    Confidence: High
+  spo2_min_x: MAR (rate=2.3%, d=0.208)
+    Moderate effect size with significant associations - depends on observed data
+    Confidence: High
+  map_mean: MAR (rate=2.1%, d=0.226)
+    Moderate effect size with significant associations - depends on observed data
+    Confidence: High
+  temperature_mean: MAR (rate=13.4%, d=0.197)
+    Moderate effect size with significant associations - depends on observed data
+    Confidence: High
+  sbp_mean: MAR (rate=25.3%, d=0.248)
+    Moderate effect size with significant associations - depends on observed data
+    Confidence: High
+
+============================================================
+RECOMMENDATIONS FOR PHASE 6 & 7:
+  1. MCAR features: Simple imputation (median) is acceptable
+  2. MAR features: Use multiple imputation (MICE)
+  3. MNAR features: Need special handling (sensitivity analysis)
+  4. Keep missingness indicators for ALL features
+  5. CatBoost handles all mechanisms natively
+============================================================

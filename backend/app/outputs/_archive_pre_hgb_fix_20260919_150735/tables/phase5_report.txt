@@ -1,0 +1,107 @@
+======================================================================
+PHASE 5: MISSINGNESS CHARACTERIZATION REPORT
+======================================================================
+Feature window: 0-6h from ICU admission
+Outcome: pure ΔSOFA ≥ 2 at 6-18h
+Data: X_train.csv (train only, from Phase 4)
+Samples: 46,327
+Numeric features: 118
+Mask columns (from Phase 4): 89
+pyampute version: 0.0.1
+Overall missingness: 956,461/5,466,586 (17.50%)
+
+----------------------------------------------------------------------
+STEP 1: DESCRIPTIVE
+----------------------------------------------------------------------
+Features with missingness: 89
+  <5%:    36
+  5–15%:  6
+  >15%:   47
+Unique missingness patterns: 2875
+Samples with complete data: 792 (1.7%)
+
+----------------------------------------------------------------------
+STEP 2: MCAR TEST
+----------------------------------------------------------------------
+  status: completed
+  method: little_pyampute
+  pyampute_version: 0.0.1
+  p_value: 0.0
+  n_features_tested: 89
+  n_samples: 46327
+  conclusion: reject_MCAR
+  scale_caveat: Little's test is hypersensitive at large sample sizes. Rejection is expected and does not constitute strong evidence against MCAR. MAR and MNAR remain indistinguishable.
+
+----------------------------------------------------------------------
+STEP 3: MISSINGNESS vs OUTCOME
+----------------------------------------------------------------------
+PRIMARY METRIC: Cramér's V (effect size)
+Chi-square p-values reported for reference only.
+
+Total features tested: 89
+BH-FDR significant (p_bh < 0.05): 89/89
+
+Effect size distribution (Cramér's V):
+  V ≥ 0.10 (small or larger):   71
+  V ≥ 0.30 (medium or larger):  9
+  V ≥ 0.50 (large):             0
+
+⚠️  Given the large sample size, chi-square p-values
+    are expected to be significant for trivial
+    associations. We therefore report Cramér's V as
+    the primary measure of effect size and interpret
+    V ≥ 0.10 as potentially meaningful.
+
+Cramér's V interpretation (2×2 table, df=1):
+  V < 0.10 : negligible
+  0.10–0.30: small
+  0.30–0.50: medium
+  V ≥ 0.50 : large
+
+Top 10 features by Cramér's V:
+  V=0.315 (medium    ) gcs_total_delta: p_bh=0, missing=5.1%
+  V=0.315 (medium    ) gcs_total_min: p_bh=0, missing=5.1%
+  V=0.315 (medium    ) gcs_total_last: p_bh=0, missing=5.1%
+  V=0.315 (medium    ) gcs_motor_min: p_bh=0, missing=4.9%
+  V=0.315 (medium    ) gcs_motor_last: p_bh=0, missing=4.9%
+  V=0.313 (medium    ) gcs_eyes_last: p_bh=0, missing=4.6%
+  V=0.313 (medium    ) gcs_eyes_min: p_bh=0, missing=4.6%
+  V=0.312 (medium    ) gcs_verbal_min: p_bh=0, missing=4.7%
+  V=0.312 (medium    ) gcs_verbal_last: p_bh=0, missing=4.7%
+  V=0.270 (small     ) heart_rate_delta: p_bh=0, missing=2.3%
+
+----------------------------------------------------------------------
+LIMITATIONS
+----------------------------------------------------------------------
+  1. MAR vs MNAR cannot be distinguished statistically.
+     Any method claiming to do so makes untestable
+     assumptions. We assume MAR for imputation purposes
+     and acknowledge this as a limitation.
+
+  2. If MCAR was rejected, we know only that missingness
+     is not completely random. We do not know whether it
+     is MAR or MNAR.
+
+  3. Little's MCAR test is hypersensitive at large N.
+     Rejection indicates non-exact-MCAR, not strong
+     evidence against MCAR.
+
+  4. Chi-square p-values are inflated by sample size.
+     Cramér's V is reported as the primary effect size
+     and should be used to prioritize features.
+
+----------------------------------------------------------------------
+IMPLICATIONS FOR PHASE 6
+----------------------------------------------------------------------
+  • The MCAR test result determines whether simple
+    imputation (e.g., median) is justified. If MCAR is
+    rejected, do not assume MCAR for imputation.
+  • Test multiple imputation methods empirically in
+    Phase 6 (the phase already does this: 4 tabular
+    strategies × 3 tree models).
+  • Missingness masks are already present in X_train.csv
+    from Phase 4. Phase 6 decides whether to include them.
+  • Prioritize features with high Cramér's V when
+    deciding which masks to include.
+  • Include sensitivity analysis under MAR and MNAR
+    assumptions in Phase 6.

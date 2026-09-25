@@ -1,0 +1,254 @@
+============================================================
+FEATURE LIST (0-6 HOURS + TEMPORAL FEATURES)
+============================================================
+Total features: 235
+Temporal features: 2607856
+============================================================
+
+⚠️  NO DATA LEAKAGE - Features from 0-6h ONLY
+⚠️  Features END before Outcome BEGINS
+TARGET: Organ Dysfunction Progression (ΔSOFA ≥ 2)
+============================================================
+
+TEMPORAL FEATURES:
+  • _slope: Linear regression slope (value per hour)
+  • _delta: Net change (last − first)
+  • _range: max − min (vitals only)
+  • _time_since_last_measure: Recency in hours (vitals only)
+============================================================
+
+  heart_rate_min
+  heart_rate_max
+  heart_rate_mean
+  heart_rate_median
+  heart_rate_std
+  heart_rate_last
+  heart_rate_count
+  heart_rate_slope
+  heart_rate_delta
+  heart_rate_range
+  heart_rate_time_since_last_measure
+  respiratory_rate_min
+  respiratory_rate_max
+  respiratory_rate_mean
+  respiratory_rate_median
+  respiratory_rate_std
+  respiratory_rate_last
+  respiratory_rate_count
+  respiratory_rate_slope
+  respiratory_rate_delta
+  respiratory_rate_range
+  respiratory_rate_time_since_last_measure
+  spo2_min
+  spo2_max
+  spo2_mean
+  spo2_median
+  spo2_std
+  spo2_last
+  spo2_count
+  spo2_slope
+  spo2_delta
+  spo2_range
+  spo2_time_since_last_measure
+  map_min
+  map_max
+  map_mean
+  map_median
+  map_std
+  map_last
+  map_count
+  map_slope
+  map_delta
+  map_range
+  map_time_since_last_measure
+  temperature_min
+  temperature_max
+  temperature_mean
+  temperature_median
+  temperature_std
+  temperature_last
+  temperature_count
+  temperature_slope
+  temperature_delta
+  temperature_range
+  temperature_time_since_last_measure
+  sbp_min
+  sbp_max
+  sbp_mean
+  sbp_median
+  sbp_std
+  sbp_last
+  sbp_count
+  sbp_slope
+  sbp_delta
+  sbp_range
+  sbp_time_since_last_measure
+  dbp_min
+  dbp_max
+  dbp_mean
+  dbp_median
+  dbp_std
+  dbp_last
+  dbp_count
+  dbp_slope
+  dbp_delta
+  dbp_range
+  dbp_time_since_last_measure
+  gcs_eyes_min
+  gcs_eyes_last
+  gcs_eyes_slope
+  gcs_eyes_delta
+  gcs_verbal_min
+  gcs_verbal_last
+  gcs_verbal_slope
+  gcs_verbal_delta
+  gcs_motor_min
+  gcs_motor_last
+  gcs_motor_slope
+  gcs_motor_delta
+  gcs_total_min
+  gcs_total_last
+  gcs_total_delta
+  pao2_min
+  pao2_max
+  pao2_mean
+  pao2_last
+  pao2_slope
+  pao2_delta
+  fio2_min
+  fio2_max
+  fio2_mean
+  fio2_last
+  fio2_slope
+  fio2_delta
+  pao2_fio2_ratio
+  norepinephrine_any
+  norepinephrine_max_rate
+  norepinephrine_mean_rate
+  epinephrine_any
+  epinephrine_max_rate
+  epinephrine_mean_rate
+  dopamine_any
+  dopamine_max_rate
+  dopamine_mean_rate
+  dobutamine_any
+  dobutamine_max_rate
+  dobutamine_mean_rate
+  vasopressin_any
+  vasopressin_max_rate
+  vasopressin_mean_rate
+  phenylephrine_any
+  phenylephrine_max_rate
+  phenylephrine_mean_rate
+  creatinine_worst
+  creatinine_last
+  creatinine_count
+  creatinine_slope
+  creatinine_delta
+  platelets_worst
+  platelets_last
+  platelets_count
+  platelets_slope
+  platelets_delta
+  bun_worst
+  bun_last
+  bun_count
+  bun_slope
+  bun_delta
+  wbc_worst
+  wbc_last
+  wbc_count
+  wbc_slope
+  wbc_delta
+  hematocrit_worst
+  hematocrit_last
+  hematocrit_count
+  hematocrit_slope
+  hematocrit_delta
+  sodium_worst
+  sodium_last
+  sodium_count
+  sodium_slope
+  sodium_delta
+  potassium_worst
+  potassium_last
+  potassium_count
+  potassium_slope
+  potassium_delta
+  chloride_worst
+  chloride_last
+  chloride_count
+  chloride_slope
+  chloride_delta
+  bicarbonate_worst
+  bicarbonate_last
+  bicarbonate_count
+  bicarbonate_slope
+  bicarbonate_delta
+  glucose_worst
+  glucose_last
+  glucose_count
+  glucose_slope
+  glucose_delta
+  inr_worst
+  inr_last
+  inr_count
+  inr_slope
+  inr_delta
+  ptt_worst
+  ptt_last
+  ptt_count
+  ptt_slope
+  ptt_delta
+  pt_worst
+  pt_last
+  pt_count
+  pt_slope
+  pt_delta
+  lactate_worst
+  lactate_last
+  lactate_count
+  lactate_slope
+  lactate_delta
+  hemoglobin_worst
+  hemoglobin_last
+  hemoglobin_count
+  hemoglobin_slope
+  hemoglobin_delta
+  bilirubin_worst
+  bilirubin_last
+  bilirubin_count
+  bilirubin_slope
+  bilirubin_delta
+  alt_worst
+  alt_last
+  alt_count
+  alt_slope
+  alt_delta
+  ast_worst
+  ast_last
+  ast_count
+  ast_slope
+  ast_delta
+  alkaline_phosphatase_worst
+  alkaline_phosphatase_last
+  alkaline_phosphatase_count
+  alkaline_phosphatase_slope
+  alkaline_phosphatase_delta
+  albumin_worst
+  albumin_last
+  albumin_count
+  albumin_slope
+  albumin_delta
+  age
+  gender_male
+  admission_AMBULATORY OBSERVATION
+  admission_DIRECT EMER.
+  admission_DIRECT OBSERVATION
+  admission_ELECTIVE
+  admission_EU OBSERVATION
+  admission_EW EMER.
+  admission_OBSERVATION ADMIT
+  admission_SURGICAL SAME DAY ADMISSION
+  admission_URGENT
+  sofa_feature

@@ -1,0 +1,802 @@
+[
+  {
+    "position": 0,
+    "config_name": "heart_rate_mean",
+    "booster_name": "heart_rate_mean"
+  },
+  {
+    "position": 1,
+    "config_name": "heart_rate_slope",
+    "booster_name": "heart_rate_slope"
+  },
+  {
+    "position": 2,
+    "config_name": "heart_rate_delta",
+    "booster_name": "heart_rate_delta"
+  },
+  {
+    "position": 3,
+    "config_name": "heart_rate_range",
+    "booster_name": "heart_rate_range"
+  },
+  {
+    "position": 4,
+    "config_name": "heart_rate_time_since_last_measure",
+    "booster_name": "heart_rate_time_since_last_measure"
+  },
+  {
+    "position": 5,
+    "config_name": "respiratory_rate_mean",
+    "booster_name": "respiratory_rate_mean"
+  },
+  {
+    "position": 6,
+    "config_name": "respiratory_rate_slope",
+    "booster_name": "respiratory_rate_slope"
+  },
+  {
+    "position": 7,
+    "config_name": "respiratory_rate_delta",
+    "booster_name": "respiratory_rate_delta"
+  },
+  {
+    "position": 8,
+    "config_name": "respiratory_rate_range",
+    "booster_name": "respiratory_rate_range"
+  },
+  {
+    "position": 9,
+    "config_name": "respiratory_rate_time_since_last_measure",
+    "booster_name": "respiratory_rate_time_since_last_measure"
+  },
+  {
+    "position": 10,
+    "config_name": "spo2_mean",
+    "booster_name": "spo2_mean"
+  },
+  {
+    "position": 11,
+    "config_name": "spo2_slope",
+    "booster_name": "spo2_slope"
+  },
+  {
+    "position": 12,
+    "config_name": "spo2_delta",
+    "booster_name": "spo2_delta"
+  },
+  {
+    "position": 13,
+    "config_name": "spo2_range",
+    "booster_name": "spo2_range"
+  },
+  {
+    "position": 14,
+    "config_name": "spo2_time_since_last_measure",
+    "booster_name": "spo2_time_since_last_measure"
+  },
+  {
+    "position": 15,
+    "config_name": "temperature_mean",
+    "booster_name": "temperature_mean"
+  },
+  {
+    "position": 16,
+    "config_name": "temperature_slope",
+    "booster_name": "temperature_slope"
+  },
+  {
+    "position": 17,
+    "config_name": "temperature_delta",
+    "booster_name": "temperature_delta"
+  },
+  {
+    "position": 18,
+    "config_name": "temperature_range",
+    "booster_name": "temperature_range"
+  },
+  {
+    "position": 19,
+    "config_name": "temperature_time_since_last_measure",
+    "booster_name": "temperature_time_since_last_measure"
+  },
+  {
+    "position": 20,
+    "config_name": "sbp_mean",
+    "booster_name": "sbp_mean"
+  },
+  {
+    "position": 21,
+    "config_name": "sbp_slope",
+    "booster_name": "sbp_slope"
+  },
+  {
+    "position": 22,
+    "config_name": "sbp_delta",
+    "booster_name": "sbp_delta"
+  },
+  {
+    "position": 23,
+    "config_name": "sbp_range",
+    "booster_name": "sbp_range"
+  },
+  {
+    "position": 24,
+    "config_name": "sbp_time_since_last_measure",
+    "booster_name": "sbp_time_since_last_measure"
+  },
+  {
+    "position": 25,
+    "config_name": "dbp_mean",
+    "booster_name": "dbp_mean"
+  },
+  {
+    "position": 26,
+    "config_name": "dbp_slope",
+    "booster_name": "dbp_slope"
+  },
+  {
+    "position": 27,
+    "config_name": "dbp_delta",
+    "booster_name": "dbp_delta"
+  },
+  {
+    "position": 28,
+    "config_name": "dbp_range",
+    "booster_name": "dbp_range"
+  },
+  {
+    "position": 29,
+    "config_name": "dbp_time_since_last_measure",
+    "booster_name": "dbp_time_since_last_measure"
+  },
+  {
+    "position": 30,
+    "config_name": "map_mean",
+    "booster_name": "map_mean"
+  },
+  {
+    "position": 31,
+    "config_name": "map_slope",
+    "booster_name": "map_slope"
+  },
+  {
+    "position": 32,
+    "config_name": "map_delta",
+    "booster_name": "map_delta"
+  },
+  {
+    "position": 33,
+    "config_name": "map_range",
+    "booster_name": "map_range"
+  },
+  {
+    "position": 34,
+    "config_name": "map_time_since_last_measure",
+    "booster_name": "map_time_since_last_measure"
+  },
+  {
+    "position": 35,
+    "config_name": "creatinine_worst",
+    "booster_name": "creatinine_worst"
+  },
+  {
+    "position": 36,
+    "config_name": "creatinine_last",
+    "booster_name": "creatinine_last"
+  },
+  {
+    "position": 37,
+    "config_name": "platelets_worst",
+    "booster_name": "platelets_worst"
+  },
+  {
+    "position": 38,
+    "config_name": "platelets_last",
+    "booster_name": "platelets_last"
+  },
+  {
+    "position": 39,
+    "config_name": "bun_worst",
+    "booster_name": "bun_worst"
+  },
+  {
+    "position": 40,
+    "config_name": "bun_last",
+    "booster_name": "bun_last"
+  },
+  {
+    "position": 41,
+    "config_name": "wbc_worst",
+    "booster_name": "wbc_worst"
+  },
+  {
+    "position": 42,
+    "config_name": "wbc_last",
+    "booster_name": "wbc_last"
+  },
+  {
+    "position": 43,
+    "config_name": "hemoglobin_worst",
+    "booster_name": "hemoglobin_worst"
+  },
+  {
+    "position": 44,
+    "config_name": "hemoglobin_last",
+    "booster_name": "hemoglobin_last"
+  },
+  {
+    "position": 45,
+    "config_name": "hematocrit_worst",
+    "booster_name": "hematocrit_worst"
+  },
+  {
+    "position": 46,
+    "config_name": "hematocrit_last",
+    "booster_name": "hematocrit_last"
+  },
+  {
+    "position": 47,
+    "config_name": "sodium_worst",
+    "booster_name": "sodium_worst"
+  },
+  {
+    "position": 48,
+    "config_name": "sodium_last",
+    "booster_name": "sodium_last"
+  },
+  {
+    "position": 49,
+    "config_name": "potassium_worst",
+    "booster_name": "potassium_worst"
+  },
+  {
+    "position": 50,
+    "config_name": "potassium_last",
+    "booster_name": "potassium_last"
+  },
+  {
+    "position": 51,
+    "config_name": "chloride_worst",
+    "booster_name": "chloride_worst"
+  },
+  {
+    "position": 52,
+    "config_name": "chloride_last",
+    "booster_name": "chloride_last"
+  },
+  {
+    "position": 53,
+    "config_name": "bicarbonate_worst",
+    "booster_name": "bicarbonate_worst"
+  },
+  {
+    "position": 54,
+    "config_name": "bicarbonate_last",
+    "booster_name": "bicarbonate_last"
+  },
+  {
+    "position": 55,
+    "config_name": "glucose_worst",
+    "booster_name": "glucose_worst"
+  },
+  {
+    "position": 56,
+    "config_name": "glucose_last",
+    "booster_name": "glucose_last"
+  },
+  {
+    "position": 57,
+    "config_name": "inr_worst",
+    "booster_name": "inr_worst"
+  },
+  {
+    "position": 58,
+    "config_name": "inr_last",
+    "booster_name": "inr_last"
+  },
+  {
+    "position": 59,
+    "config_name": "ptt_worst",
+    "booster_name": "ptt_worst"
+  },
+  {
+    "position": 60,
+    "config_name": "ptt_last",
+    "booster_name": "ptt_last"
+  },
+  {
+    "position": 61,
+    "config_name": "pt_worst",
+    "booster_name": "pt_worst"
+  },
+  {
+    "position": 62,
+    "config_name": "pt_last",
+    "booster_name": "pt_last"
+  },
+  {
+    "position": 63,
+    "config_name": "bilirubin_worst",
+    "booster_name": "bilirubin_worst"
+  },
+  {
+    "position": 64,
+    "config_name": "bilirubin_last",
+    "booster_name": "bilirubin_last"
+  },
+  {
+    "position": 65,
+    "config_name": "lactate_worst",
+    "booster_name": "lactate_worst"
+  },
+  {
+    "position": 66,
+    "config_name": "lactate_last",
+    "booster_name": "lactate_last"
+  },
+  {
+    "position": 67,
+    "config_name": "gcs_eyes_min",
+    "booster_name": "gcs_eyes_min"
+  },
+  {
+    "position": 68,
+    "config_name": "gcs_eyes_last",
+    "booster_name": "gcs_eyes_last"
+  },
+  {
+    "position": 69,
+    "config_name": "gcs_eyes_slope",
+    "booster_name": "gcs_eyes_slope"
+  },
+  {
+    "position": 70,
+    "config_name": "gcs_eyes_delta",
+    "booster_name": "gcs_eyes_delta"
+  },
+  {
+    "position": 71,
+    "config_name": "gcs_verbal_min",
+    "booster_name": "gcs_verbal_min"
+  },
+  {
+    "position": 72,
+    "config_name": "gcs_verbal_last",
+    "booster_name": "gcs_verbal_last"
+  },
+  {
+    "position": 73,
+    "config_name": "gcs_verbal_slope",
+    "booster_name": "gcs_verbal_slope"
+  },
+  {
+    "position": 74,
+    "config_name": "gcs_verbal_delta",
+    "booster_name": "gcs_verbal_delta"
+  },
+  {
+    "position": 75,
+    "config_name": "gcs_motor_min",
+    "booster_name": "gcs_motor_min"
+  },
+  {
+    "position": 76,
+    "config_name": "gcs_motor_last",
+    "booster_name": "gcs_motor_last"
+  },
+  {
+    "position": 77,
+    "config_name": "gcs_motor_slope",
+    "booster_name": "gcs_motor_slope"
+  },
+  {
+    "position": 78,
+    "config_name": "gcs_motor_delta",
+    "booster_name": "gcs_motor_delta"
+  },
+  {
+    "position": 79,
+    "config_name": "gcs_total_min",
+    "booster_name": "gcs_total_min"
+  },
+  {
+    "position": 80,
+    "config_name": "gcs_total_last",
+    "booster_name": "gcs_total_last"
+  },
+  {
+    "position": 81,
+    "config_name": "gcs_total_delta",
+    "booster_name": "gcs_total_delta"
+  },
+  {
+    "position": 82,
+    "config_name": "fio2_min",
+    "booster_name": "fio2_min"
+  },
+  {
+    "position": 83,
+    "config_name": "fio2_max",
+    "booster_name": "fio2_max"
+  },
+  {
+    "position": 84,
+    "config_name": "fio2_mean",
+    "booster_name": "fio2_mean"
+  },
+  {
+    "position": 85,
+    "config_name": "fio2_last",
+    "booster_name": "fio2_last"
+  },
+  {
+    "position": 86,
+    "config_name": "pao2_min",
+    "booster_name": "pao2_min"
+  },
+  {
+    "position": 87,
+    "config_name": "pao2_max",
+    "booster_name": "pao2_max"
+  },
+  {
+    "position": 88,
+    "config_name": "pao2_mean",
+    "booster_name": "pao2_mean"
+  },
+  {
+    "position": 89,
+    "config_name": "pao2_last",
+    "booster_name": "pao2_last"
+  },
+  {
+    "position": 90,
+    "config_name": "pao2_fio2_ratio",
+    "booster_name": "pao2_fio2_ratio"
+  },
+  {
+    "position": 91,
+    "config_name": "norepinephrine_any",
+    "booster_name": "norepinephrine_any"
+  },
+  {
+    "position": 92,
+    "config_name": "norepinephrine_max_rate",
+    "booster_name": "norepinephrine_max_rate"
+  },
+  {
+    "position": 93,
+    "config_name": "norepinephrine_mean_rate",
+    "booster_name": "norepinephrine_mean_rate"
+  },
+  {
+    "position": 94,
+    "config_name": "epinephrine_any",
+    "booster_name": "epinephrine_any"
+  },
+  {
+    "position": 95,
+    "config_name": "epinephrine_max_rate",
+    "booster_name": "epinephrine_max_rate"
+  },
+  {
+    "position": 96,
+    "config_name": "epinephrine_mean_rate",
+    "booster_name": "epinephrine_mean_rate"
+  },
+  {
+    "position": 97,
+    "config_name": "dopamine_any",
+    "booster_name": "dopamine_any"
+  },
+  {
+    "position": 98,
+    "config_name": "dopamine_max_rate",
+    "booster_name": "dopamine_max_rate"
+  },
+  {
+    "position": 99,
+    "config_name": "dopamine_mean_rate",
+    "booster_name": "dopamine_mean_rate"
+  },
+  {
+    "position": 100,
+    "config_name": "dobutamine_any",
+    "booster_name": "dobutamine_any"
+  },
+  {
+    "position": 101,
+    "config_name": "dobutamine_max_rate",
+    "booster_name": "dobutamine_max_rate"
+  },
+  {
+    "position": 102,
+    "config_name": "dobutamine_mean_rate",
+    "booster_name": "dobutamine_mean_rate"
+  },
+  {
+    "position": 103,
+    "config_name": "vasopressin_any",
+    "booster_name": "vasopressin_any"
+  },
+  {
+    "position": 104,
+    "config_name": "vasopressin_max_rate",
+    "booster_name": "vasopressin_max_rate"
+  },
+  {
+    "position": 105,
+    "config_name": "vasopressin_mean_rate",
+    "booster_name": "vasopressin_mean_rate"
+  },
+  {
+    "position": 106,
+    "config_name": "phenylephrine_any",
+    "booster_name": "phenylephrine_any"
+  },
+  {
+    "position": 107,
+    "config_name": "phenylephrine_max_rate",
+    "booster_name": "phenylephrine_max_rate"
+  },
+  {
+    "position": 108,
+    "config_name": "phenylephrine_mean_rate",
+    "booster_name": "phenylephrine_mean_rate"
+  },
+  {
+    "position": 109,
+    "config_name": "age",
+    "booster_name": "age"
+  },
+  {
+    "position": 110,
+    "config_name": "gender_male",
+    "booster_name": "gender_male"
+  },
+  {
+    "position": 111,
+    "config_name": "admission_AMBULATORY OBSERVATION",
+    "booster_name": "admission_AMBULATORY_OBSERVATION"
+  },
+  {
+    "position": 112,
+    "config_name": "admission_DIRECT EMER.",
+    "booster_name": "admission_DIRECT_EMER."
+  },
+  {
+    "position": 113,
+    "config_name": "admission_DIRECT OBSERVATION",
+    "booster_name": "admission_DIRECT_OBSERVATION"
+  },
+  {
+    "position": 114,
+    "config_name": "admission_ELECTIVE",
+    "booster_name": "admission_ELECTIVE"
+  },
+  {
+    "position": 115,
+    "config_name": "admission_EU OBSERVATION",
+    "booster_name": "admission_EU_OBSERVATION"
+  },
+  {
+    "position": 116,
+    "config_name": "admission_EW EMER.",
+    "booster_name": "admission_EW_EMER."
+  },
+  {
+    "position": 117,
+    "config_name": "admission_OBSERVATION ADMIT",
+    "booster_name": "admission_OBSERVATION_ADMIT"
+  },
+  {
+    "position": 118,
+    "config_name": "admission_SURGICAL SAME DAY ADMISSION",
+    "booster_name": "admission_SURGICAL_SAME_DAY_ADMISSION"
+  },
+  {
+    "position": 119,
+    "config_name": "admission_URGENT",
+    "booster_name": "admission_URGENT"
+  },
+  {
+    "position": 120,
+    "config_name": "heart_rate_mean_missing",
+    "booster_name": "heart_rate_mean_missing"
+  },
+  {
+    "position": 121,
+    "config_name": "heart_rate_slope_missing",
+    "booster_name": "heart_rate_slope_missing"
+  },
+  {
+    "position": 122,
+    "config_name": "respiratory_rate_mean_missing",
+    "booster_name": "respiratory_rate_mean_missing"
+  },
+  {
+    "position": 123,
+    "config_name": "respiratory_rate_slope_missing",
+    "booster_name": "respiratory_rate_slope_missing"
+  },
+  {
+    "position": 124,
+    "config_name": "spo2_mean_missing",
+    "booster_name": "spo2_mean_missing"
+  },
+  {
+    "position": 125,
+    "config_name": "spo2_slope_missing",
+    "booster_name": "spo2_slope_missing"
+  },
+  {
+    "position": 126,
+    "config_name": "temperature_mean_missing",
+    "booster_name": "temperature_mean_missing"
+  },
+  {
+    "position": 127,
+    "config_name": "temperature_slope_missing",
+    "booster_name": "temperature_slope_missing"
+  },
+  {
+    "position": 128,
+    "config_name": "sbp_mean_missing",
+    "booster_name": "sbp_mean_missing"
+  },
+  {
+    "position": 129,
+    "config_name": "sbp_slope_missing",
+    "booster_name": "sbp_slope_missing"
+  },
+  {
+    "position": 130,
+    "config_name": "dbp_slope_missing",
+    "booster_name": "dbp_slope_missing"
+  },
+  {
+    "position": 131,
+    "config_name": "map_mean_missing",
+    "booster_name": "map_mean_missing"
+  },
+  {
+    "position": 132,
+    "config_name": "map_slope_missing",
+    "booster_name": "map_slope_missing"
+  },
+  {
+    "position": 133,
+    "config_name": "creatinine_worst_missing",
+    "booster_name": "creatinine_worst_missing"
+  },
+  {
+    "position": 134,
+    "config_name": "platelets_worst_missing",
+    "booster_name": "platelets_worst_missing"
+  },
+  {
+    "position": 135,
+    "config_name": "bun_worst_missing",
+    "booster_name": "bun_worst_missing"
+  },
+  {
+    "position": 136,
+    "config_name": "wbc_worst_missing",
+    "booster_name": "wbc_worst_missing"
+  },
+  {
+    "position": 137,
+    "config_name": "hemoglobin_worst_missing",
+    "booster_name": "hemoglobin_worst_missing"
+  },
+  {
+    "position": 138,
+    "config_name": "hematocrit_worst_missing",
+    "booster_name": "hematocrit_worst_missing"
+  },
+  {
+    "position": 139,
+    "config_name": "sodium_worst_missing",
+    "booster_name": "sodium_worst_missing"
+  },
+  {
+    "position": 140,
+    "config_name": "potassium_worst_missing",
+    "booster_name": "potassium_worst_missing"
+  },
+  {
+    "position": 141,
+    "config_name": "chloride_worst_missing",
+    "booster_name": "chloride_worst_missing"
+  },
+  {
+    "position": 142,
+    "config_name": "bicarbonate_worst_missing",
+    "booster_name": "bicarbonate_worst_missing"
+  },
+  {
+    "position": 143,
+    "config_name": "glucose_worst_missing",
+    "booster_name": "glucose_worst_missing"
+  },
+  {
+    "position": 144,
+    "config_name": "inr_worst_missing",
+    "booster_name": "inr_worst_missing"
+  },
+  {
+    "position": 145,
+    "config_name": "ptt_worst_missing",
+    "booster_name": "ptt_worst_missing"
+  },
+  {
+    "position": 146,
+    "config_name": "pt_worst_missing",
+    "booster_name": "pt_worst_missing"
+  },
+  {
+    "position": 147,
+    "config_name": "bilirubin_worst_missing",
+    "booster_name": "bilirubin_worst_missing"
+  },
+  {
+    "position": 148,
+    "config_name": "lactate_worst_missing",
+    "booster_name": "lactate_worst_missing"
+  },
+  {
+    "position": 149,
+    "config_name": "gcs_eyes_min_missing",
+    "booster_name": "gcs_eyes_min_missing"
+  },
+  {
+    "position": 150,
+    "config_name": "gcs_eyes_slope_missing",
+    "booster_name": "gcs_eyes_slope_missing"
+  },
+  {
+    "position": 151,
+    "config_name": "gcs_verbal_min_missing",
+    "booster_name": "gcs_verbal_min_missing"
+  },
+  {
+    "position": 152,
+    "config_name": "gcs_verbal_slope_missing",
+    "booster_name": "gcs_verbal_slope_missing"
+  },
+  {
+    "position": 153,
+    "config_name": "gcs_motor_min_missing",
+    "booster_name": "gcs_motor_min_missing"
+  },
+  {
+    "position": 154,
+    "config_name": "gcs_motor_slope_missing",
+    "booster_name": "gcs_motor_slope_missing"
+  },
+  {
+    "position": 155,
+    "config_name": "gcs_total_min_missing",
+    "booster_name": "gcs_total_min_missing"
+  },
+  {
+    "position": 156,
+    "config_name": "fio2_min_missing",
+    "booster_name": "fio2_min_missing"
+  },
+  {
+    "position": 157,
+    "config_name": "pao2_min_missing",
+    "booster_name": "pao2_min_missing"
+  },
+  {
+    "position": 158,
+    "config_name": "pao2_fio2_ratio_missing",
+    "booster_name": "pao2_fio2_ratio_missing"
+  },
+  {
+    "position": 159,
+    "config_name": "norepinephrine_any_missing",
+    "booster_name": "norepinephrine_any_missing"
+  }
+]

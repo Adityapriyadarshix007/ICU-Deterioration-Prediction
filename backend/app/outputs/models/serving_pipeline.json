@@ -1,0 +1,948 @@
+{
+  "feature_cols": [
+    "heart_rate_mean",
+    "heart_rate_slope",
+    "heart_rate_delta",
+    "heart_rate_range",
+    "heart_rate_time_since_last_measure",
+    "respiratory_rate_mean",
+    "respiratory_rate_slope",
+    "respiratory_rate_delta",
+    "respiratory_rate_range",
+    "respiratory_rate_time_since_last_measure",
+    "spo2_mean",
+    "spo2_slope",
+    "spo2_delta",
+    "spo2_range",
+    "spo2_time_since_last_measure",
+    "temperature_mean",
+    "temperature_slope",
+    "temperature_delta",
+    "temperature_range",
+    "temperature_time_since_last_measure",
+    "sbp_mean",
+    "sbp_slope",
+    "sbp_delta",
+    "sbp_range",
+    "sbp_time_since_last_measure",
+    "dbp_mean",
+    "dbp_slope",
+    "dbp_delta",
+    "dbp_range",
+    "dbp_time_since_last_measure",
+    "map_mean",
+    "map_slope",
+    "map_delta",
+    "map_range",
+    "map_time_since_last_measure",
+    "creatinine_worst",
+    "creatinine_last",
+    "platelets_worst",
+    "platelets_last",
+    "bun_worst",
+    "bun_last",
+    "wbc_worst",
+    "wbc_last",
+    "hemoglobin_worst",
+    "hemoglobin_last",
+    "hematocrit_worst",
+    "hematocrit_last",
+    "sodium_worst",
+    "sodium_last",
+    "potassium_worst",
+    "potassium_last",
+    "chloride_worst",
+    "chloride_last",
+    "bicarbonate_worst",
+    "bicarbonate_last",
+    "glucose_worst",
+    "glucose_last",
+    "inr_worst",
+    "inr_last",
+    "ptt_worst",
+    "ptt_last",
+    "pt_worst",
+    "pt_last",
+    "bilirubin_worst",
+    "bilirubin_last",
+    "lactate_worst",
+    "lactate_last",
+    "gcs_eyes_min",
+    "gcs_eyes_last",
+    "gcs_eyes_slope",
+    "gcs_eyes_delta",
+    "gcs_verbal_min",
+    "gcs_verbal_last",
+    "gcs_verbal_slope",
+    "gcs_verbal_delta",
+    "gcs_motor_min",
+    "gcs_motor_last",
+    "gcs_motor_slope",
+    "gcs_motor_delta",
+    "gcs_total_min",
+    "gcs_total_last",
+    "gcs_total_delta",
+    "fio2_min",
+    "fio2_max",
+    "fio2_mean",
+    "fio2_last",
+    "pao2_min",
+    "pao2_max",
+    "pao2_mean",
+    "pao2_last",
+    "pao2_fio2_ratio",
+    "norepinephrine_any",
+    "norepinephrine_max_rate",
+    "norepinephrine_mean_rate",
+    "epinephrine_any",
+    "epinephrine_max_rate",
+    "epinephrine_mean_rate",
+    "dopamine_any",
+    "dopamine_max_rate",
+    "dopamine_mean_rate",
+    "dobutamine_any",
+    "dobutamine_max_rate",
+    "dobutamine_mean_rate",
+    "vasopressin_any",
+    "vasopressin_max_rate",
+    "vasopressin_mean_rate",
+    "phenylephrine_any",
+    "phenylephrine_max_rate",
+    "phenylephrine_mean_rate",
+    "age",
+    "gender_male",
+    "admission_AMBULATORY OBSERVATION",
+    "admission_DIRECT EMER.",
+    "admission_DIRECT OBSERVATION",
+    "admission_ELECTIVE",
+    "admission_EU OBSERVATION",
+    "admission_EW EMER.",
+    "admission_OBSERVATION ADMIT",
+    "admission_SURGICAL SAME DAY ADMISSION",
+    "admission_URGENT"
+  ],
+  "mask_cols": [
+    "heart_rate_mean_missing",
+    "heart_rate_slope_missing",
+    "respiratory_rate_mean_missing",
+    "respiratory_rate_slope_missing",
+    "spo2_mean_missing",
+    "spo2_slope_missing",
+    "temperature_mean_missing",
+    "temperature_slope_missing",
+    "sbp_mean_missing",
+    "sbp_slope_missing",
+    "dbp_slope_missing",
+    "map_mean_missing",
+    "map_slope_missing",
+    "creatinine_worst_missing",
+    "platelets_worst_missing",
+    "bun_worst_missing",
+    "wbc_worst_missing",
+    "hemoglobin_worst_missing",
+    "hematocrit_worst_missing",
+    "sodium_worst_missing",
+    "potassium_worst_missing",
+    "chloride_worst_missing",
+    "bicarbonate_worst_missing",
+    "glucose_worst_missing",
+    "inr_worst_missing",
+    "ptt_worst_missing",
+    "pt_worst_missing",
+    "bilirubin_worst_missing",
+    "lactate_worst_missing",
+    "gcs_eyes_min_missing",
+    "gcs_eyes_slope_missing",
+    "gcs_verbal_min_missing",
+    "gcs_verbal_slope_missing",
+    "gcs_motor_min_missing",
+    "gcs_motor_slope_missing",
+    "gcs_total_min_missing",
+    "fio2_min_missing",
+    "pao2_min_missing",
+    "pao2_fio2_ratio_missing",
+    "norepinephrine_any_missing"
+  ],
+  "n_total": 160,
+  "winsor_lo": {
+    "heart_rate_mean": 47.617875,
+    "heart_rate_slope": -17.98206101643446,
+    "heart_rate_delta": -57.0,
+    "heart_rate_range": 0.0,
+    "heart_rate_time_since_last_measure": 0.0058333333333333,
+    "respiratory_rate_mean": 9.815909090909091,
+    "respiratory_rate_slope": -7.530195822316156,
+    "respiratory_rate_delta": -21.0,
+    "respiratory_rate_range": 0.0,
+    "respiratory_rate_time_since_last_measure": 0.0061111111111111,
+    "spo2_mean": 89.0,
+    "spo2_slope": -3.954363281016325,
+    "spo2_delta": -10.0,
+    "spo2_range": 0.0,
+    "spo2_time_since_last_measure": 0.0061111111111111,
+    "temperature_mean": 94.3,
+    "temperature_slope": -1.50301730706437,
+    "temperature_delta": -3.799999999999997,
+    "temperature_range": 0.0,
+    "temperature_time_since_last_measure": 0.0169444444444444,
+    "sbp_mean": 83.07283333333334,
+    "sbp_slope": -45.45522452879358,
+    "sbp_delta": -81.0,
+    "sbp_range": 0.0,
+    "sbp_time_since_last_measure": 0.0055555555555555,
+    "dbp_mean": 38.42857142857143,
+    "dbp_slope": -24.890890990542434,
+    "dbp_delta": -69.0,
+    "dbp_range": 0.0,
+    "dbp_time_since_last_measure": 0.0055555555555555,
+    "map_mean": 51.68047619047619,
+    "map_slope": -34.79035475417544,
+    "map_delta": -76.0,
+    "map_range": 0.0,
+    "map_time_since_last_measure": 0.00563611111111106,
+    "creatinine_worst": 0.3,
+    "creatinine_last": 0.3,
+    "platelets_worst": 19.0,
+    "platelets_last": 20.0,
+    "bun_worst": 4.0,
+    "bun_last": 4.0,
+    "wbc_worst": 0.8,
+    "wbc_last": 0.8,
+    "hemoglobin_worst": 5.3,
+    "hemoglobin_last": 5.9,
+    "hematocrit_worst": 16.5,
+    "hematocrit_last": 18.0,
+    "sodium_worst": 117.0,
+    "sodium_last": 117.0,
+    "potassium_worst": 2.7,
+    "potassium_last": 2.6,
+    "chloride_worst": 82.0,
+    "chloride_last": 82.0,
+    "bicarbonate_worst": 7.0,
+    "bicarbonate_last": 9.0,
+    "glucose_worst": 57.0,
+    "glucose_last": 54.0,
+    "inr_worst": 0.9,
+    "inr_last": 0.9,
+    "ptt_worst": 20.1,
+    "ptt_last": 20.0045,
+    "pt_worst": 10.0225,
+    "pt_last": 10.0,
+    "bilirubin_worst": 0.1,
+    "bilirubin_last": 0.1,
+    "lactate_worst": 0.6,
+    "lactate_last": 0.6,
+    "gcs_eyes_min": 1.0,
+    "gcs_eyes_last": 1.0,
+    "gcs_eyes_slope": -0.9183673469387752,
+    "gcs_eyes_delta": -3.0,
+    "gcs_verbal_min": 1.0,
+    "gcs_verbal_last": 1.0,
+    "gcs_verbal_slope": -1.1834670587697196,
+    "gcs_verbal_delta": -4.0,
+    "gcs_motor_min": 1.0,
+    "gcs_motor_last": 1.0,
+    "gcs_motor_slope": -1.2587184873949577,
+    "gcs_motor_delta": -5.0,
+    "gcs_total_min": 3.0,
+    "gcs_total_last": 3.0,
+    "gcs_total_delta": 0.0,
+    "fio2_min": 6.0,
+    "fio2_max": 30.0,
+    "fio2_mean": 28.0,
+    "fio2_last": 21.0,
+    "pao2_min": 36.0,
+    "pao2_max": 42.44,
+    "pao2_mean": 41.44,
+    "pao2_last": 40.0,
+    "pao2_fio2_ratio": 50.695,
+    "norepinephrine_any": null,
+    "norepinephrine_max_rate": 0.0,
+    "norepinephrine_mean_rate": 0.0,
+    "epinephrine_any": null,
+    "epinephrine_max_rate": 0.0,
+    "epinephrine_mean_rate": 0.0,
+    "dopamine_any": null,
+    "dopamine_max_rate": 0.0,
+    "dopamine_mean_rate": 0.0,
+    "dobutamine_any": null,
+    "dobutamine_max_rate": 0.0,
+    "dobutamine_mean_rate": 0.0,
+    "vasopressin_any": null,
+    "vasopressin_max_rate": 0.0,
+    "vasopressin_mean_rate": 0.0,
+    "phenylephrine_any": null,
+    "phenylephrine_max_rate": 0.0,
+    "phenylephrine_mean_rate": 0.0,
+    "age": 20.0,
+    "gender_male": null,
+    "admission_AMBULATORY OBSERVATION": null,
+    "admission_DIRECT EMER.": null,
+    "admission_DIRECT OBSERVATION": null,
+    "admission_ELECTIVE": null,
+    "admission_EU OBSERVATION": null,
+    "admission_EW EMER.": null,
+    "admission_OBSERVATION ADMIT": null,
+    "admission_SURGICAL SAME DAY ADMISSION": null,
+    "admission_URGENT": null
+  },
+  "winsor_hi": {
+    "heart_rate_mean": 139.86223214285715,
+    "heart_rate_slope": 14.048258353947496,
+    "heart_rate_delta": 41.0,
+    "heart_rate_range": 80.0,
+    "heart_rate_time_since_last_measure": 2.6,
+    "respiratory_rate_mean": 34.17361111111111,
+    "respiratory_rate_slope": 10.698372535773249,
+    "respiratory_rate_delta": 19.0,
+    "respiratory_rate_range": 34.0,
+    "respiratory_rate_time_since_last_measure": 3.1666666666666665,
+    "spo2_mean": 100.0,
+    "spo2_slope": 4.456857847271796,
+    "spo2_delta": 16.0,
+    "spo2_range": 28.0,
+    "spo2_time_since_last_measure": 3.1539236111111024,
+    "temperature_mean": 101.88191666666667,
+    "temperature_slope": 2.0924347826086684,
+    "temperature_delta": 4.599999999999994,
+    "temperature_range": 4.800000000000011,
+    "temperature_time_since_last_measure": 5.933333333333334,
+    "sbp_mean": 178.74159090909092,
+    "sbp_slope": 33.038236581778435,
+    "sbp_delta": 59.0,
+    "sbp_range": 124.0,
+    "sbp_time_since_last_measure": 4.116666666666667,
+    "dbp_mean": 104.83333333333331,
+    "dbp_slope": 21.07013167672997,
+    "dbp_delta": 45.0,
+    "dbp_range": 102.0,
+    "dbp_time_since_last_measure": 4.116666666666667,
+    "map_mean": 123.1183333333332,
+    "map_slope": 25.87675361535334,
+    "map_delta": 53.0,
+    "map_range": 217.0,
+    "map_time_since_last_measure": 4.119230555555553,
+    "creatinine_worst": 10.9,
+    "creatinine_last": 10.8,
+    "platelets_worst": 607.8499999999985,
+    "platelets_last": 611.6999999999971,
+    "bun_worst": 129.0,
+    "bun_last": 127.7599999999984,
+    "wbc_worst": 48.3,
+    "wbc_last": 47.259500000000116,
+    "hemoglobin_worst": 16.4,
+    "hemoglobin_last": 16.5,
+    "hematocrit_worst": 49.6,
+    "hematocrit_last": 49.6869999999999,
+    "sodium_worst": 158.0,
+    "sodium_last": 158.0,
+    "potassium_worst": 7.3,
+    "potassium_last": 6.8,
+    "chloride_worst": 125.0,
+    "chloride_last": 123.0,
+    "bicarbonate_worst": 36.0,
+    "bicarbonate_last": 36.0,
+    "glucose_worst": 619.25,
+    "glucose_last": 513.625,
+    "inr_worst": 6.0,
+    "inr_last": 5.8,
+    "ptt_worst": 150.0,
+    "ptt_last": 150.0,
+    "pt_worst": 64.01000000000057,
+    "pt_last": 61.93250000000044,
+    "bilirubin_worst": 29.33949999999995,
+    "bilirubin_last": 29.018499999999857,
+    "lactate_worst": 13.1,
+    "lactate_last": 11.822999999999958,
+    "gcs_eyes_min": 4.0,
+    "gcs_eyes_last": 4.0,
+    "gcs_eyes_slope": 2.0000000000000018,
+    "gcs_eyes_delta": 3.0,
+    "gcs_verbal_min": 5.0,
+    "gcs_verbal_last": 5.0,
+    "gcs_verbal_slope": 1.714285714285714,
+    "gcs_verbal_delta": 4.0,
+    "gcs_motor_min": 6.0,
+    "gcs_motor_last": 6.0,
+    "gcs_motor_slope": 4.000000000000004,
+    "gcs_motor_delta": 5.0,
+    "gcs_total_min": 15.0,
+    "gcs_total_last": 15.0,
+    "gcs_total_delta": 12.0,
+    "fio2_min": 100.0,
+    "fio2_max": 100.0,
+    "fio2_mean": 100.0,
+    "fio2_last": 100.0,
+    "pao2_min": 481.0,
+    "pao2_max": 554.5599999999995,
+    "pao2_mean": 486.8899999999999,
+    "pao2_last": 504.0,
+    "pao2_fio2_ratio": 1229.0250000000015,
+    "norepinephrine_any": null,
+    "norepinephrine_max_rate": 0.5019108808482997,
+    "norepinephrine_mean_rate": 0.4011038390308388,
+    "epinephrine_any": null,
+    "epinephrine_max_rate": 0.08014965409529391,
+    "epinephrine_mean_rate": 0.06262603559889979,
+    "dopamine_any": null,
+    "dopamine_max_rate": 10.01233119517565,
+    "dopamine_mean_rate": 8.360212649595756,
+    "dobutamine_any": null,
+    "dobutamine_max_rate": 0.0,
+    "dobutamine_mean_rate": 0.0,
+    "vasopressin_any": null,
+    "vasopressin_max_rate": 2.4034069466590893,
+    "vasopressin_mean_rate": 2.4000000953674316,
+    "phenylephrine_any": null,
+    "phenylephrine_max_rate": 4.058113156352226,
+    "phenylephrine_mean_rate": 2.9441074997521706,
+    "age": 91.0,
+    "gender_male": null,
+    "admission_AMBULATORY OBSERVATION": null,
+    "admission_DIRECT EMER.": null,
+    "admission_DIRECT OBSERVATION": null,
+    "admission_ELECTIVE": null,
+    "admission_EU OBSERVATION": null,
+    "admission_EW EMER.": null,
+    "admission_OBSERVATION ADMIT": null,
+    "admission_SURGICAL SAME DAY ADMISSION": null,
+    "admission_URGENT": null
+  },
+  "medians": {
+    "heart_rate_mean": 82.875,
+    "heart_rate_slope": -0.4785172704296629,
+    "heart_rate_delta": -3.0,
+    "heart_rate_range": 16.0,
+    "heart_rate_time_since_last_measure": 0.4666666666666668,
+    "respiratory_rate_mean": 18.0,
+    "respiratory_rate_slope": 0.0081862923985842,
+    "respiratory_rate_delta": 0.0,
+    "respiratory_rate_range": 9.0,
+    "respiratory_rate_time_since_last_measure": 0.4666666666666668,
+    "spo2_mean": 97.83333333333331,
+    "spo2_slope": -1.3703555052951518e-14,
+    "spo2_delta": 0.0,
+    "spo2_range": 3.0,
+    "spo2_time_since_last_measure": 0.4675000000000002,
+    "temperature_mean": 98.15,
+    "temperature_slope": 0.025000000000001,
+    "temperature_delta": 0.0999999999999943,
+    "temperature_range": 0.2999999999999971,
+    "temperature_time_since_last_measure": 1.8166666666666664,
+    "sbp_mean": 117.0,
+    "sbp_slope": -1.1453480391195598,
+    "sbp_delta": -6.0,
+    "sbp_range": 33.0,
+    "sbp_time_since_last_measure": 0.474444444444444,
+    "dbp_mean": 63.833333333333336,
+    "dbp_slope": -0.87300077607861,
+    "dbp_delta": -4.0,
+    "dbp_range": 22.0,
+    "dbp_time_since_last_measure": 0.474444444444444,
+    "map_mean": 79.11111111111111,
+    "map_slope": -0.9642164686020293,
+    "map_delta": -5.0,
+    "map_range": 24.0,
+    "map_time_since_last_measure": 0.474166666666667,
+    "creatinine_worst": 0.9,
+    "creatinine_last": 0.9,
+    "platelets_worst": 176.0,
+    "platelets_last": 181.0,
+    "bun_worst": 18.0,
+    "bun_last": 18.0,
+    "wbc_worst": 11.9,
+    "wbc_last": 11.7,
+    "hemoglobin_worst": 10.4,
+    "hemoglobin_last": 10.9,
+    "hematocrit_worst": 31.3,
+    "hematocrit_last": 32.6,
+    "sodium_worst": 139.0,
+    "sodium_last": 139.0,
+    "potassium_worst": 4.1,
+    "potassium_last": 4.1,
+    "chloride_worst": 106.0,
+    "chloride_last": 105.0,
+    "bicarbonate_worst": 22.0,
+    "bicarbonate_last": 23.0,
+    "glucose_worst": 136.0,
+    "glucose_last": 134.0,
+    "inr_worst": 1.3,
+    "inr_last": 1.2,
+    "ptt_worst": 31.0,
+    "ptt_last": 30.3,
+    "pt_worst": 14.4,
+    "pt_last": 13.8,
+    "bilirubin_worst": 0.7,
+    "bilirubin_last": 0.7,
+    "lactate_worst": 2.2,
+    "lactate_last": 2.0,
+    "gcs_eyes_min": 3.0,
+    "gcs_eyes_last": 4.0,
+    "gcs_eyes_slope": 0.0,
+    "gcs_eyes_delta": 0.0,
+    "gcs_verbal_min": 4.0,
+    "gcs_verbal_last": 5.0,
+    "gcs_verbal_slope": 0.0,
+    "gcs_verbal_delta": 0.0,
+    "gcs_motor_min": 6.0,
+    "gcs_motor_last": 6.0,
+    "gcs_motor_slope": 0.0,
+    "gcs_motor_delta": 0.0,
+    "gcs_total_min": 14.0,
+    "gcs_total_last": 14.0,
+    "gcs_total_delta": 0.0,
+    "fio2_min": 50.0,
+    "fio2_max": 100.0,
+    "fio2_mean": 61.666666666666664,
+    "fio2_last": 50.0,
+    "pao2_min": 132.0,
+    "pao2_max": 256.0,
+    "pao2_mean": 200.0,
+    "pao2_last": 149.0,
+    "pao2_fio2_ratio": 292.0,
+    "norepinephrine_any": 0.0,
+    "norepinephrine_max_rate": 0.0,
+    "norepinephrine_mean_rate": 0.0,
+    "epinephrine_any": 0.0,
+    "epinephrine_max_rate": 0.0,
+    "epinephrine_mean_rate": 0.0,
+    "dopamine_any": 0.0,
+    "dopamine_max_rate": 0.0,
+    "dopamine_mean_rate": 0.0,
+    "dobutamine_any": 0.0,
+    "dobutamine_max_rate": 0.0,
+    "dobutamine_mean_rate": 0.0,
+    "vasopressin_any": 0.0,
+    "vasopressin_max_rate": 0.0,
+    "vasopressin_mean_rate": 0.0,
+    "phenylephrine_any": 0.0,
+    "phenylephrine_max_rate": 0.0,
+    "phenylephrine_mean_rate": 0.0,
+    "age": 65.0,
+    "gender_male": 1.0,
+    "admission_AMBULATORY OBSERVATION": 0.0,
+    "admission_DIRECT EMER.": 0.0,
+    "admission_DIRECT OBSERVATION": 0.0,
+    "admission_ELECTIVE": 0.0,
+    "admission_EU OBSERVATION": 0.0,
+    "admission_EW EMER.": 1.0,
+    "admission_OBSERVATION ADMIT": 0.0,
+    "admission_SURGICAL SAME DAY ADMISSION": 0.0,
+    "admission_URGENT": 0.0
+  },
+  "scaler": {
+    "heart_rate_mean": {
+      "mean": 85.42422568361813,
+      "scale": 17.71585777206917
+    },
+    "heart_rate_slope": {
+      "mean": -0.6245371430860752,
+      "scale": 3.780653694540282
+    },
+    "heart_rate_delta": {
+      "mean": -3.467770276519005,
+      "scale": 14.21052734164802
+    },
+    "heart_rate_range": {
+      "mean": 18.503134218289084,
+      "scale": 12.79228782651717
+    },
+    "heart_rate_time_since_last_measure": {
+      "mean": 0.5019168578608106,
+      "scale": 0.3660725636535265
+    },
+    "respiratory_rate_mean": {
+      "mean": 18.74378039446594,
+      "scale": 4.293537352370969
+    },
+    "respiratory_rate_slope": {
+      "mean": 0.0937175818451383,
+      "scale": 1.729600303251198
+    },
+    "respiratory_rate_delta": {
+      "mean": 0.1686997547878449,
+      "scale": 6.308452318616666
+    },
+    "respiratory_rate_range": {
+      "mean": 9.772578453175193,
+      "scale": 5.852367095135071
+    },
+    "respiratory_rate_time_since_last_measure": {
+      "mean": 0.5131835996485736,
+      "scale": 0.4043835973661166
+    },
+    "spo2_mean": {
+      "mean": 97.41218015166804,
+      "scale": 2.28021096199035
+    },
+    "spo2_slope": {
+      "mean": -0.0439866571640992,
+      "scale": 0.8069933558624868
+    },
+    "spo2_delta": {
+      "mean": -0.0680545673894886,
+      "scale": 3.305971634356899
+    },
+    "spo2_range": {
+      "mean": 4.20521423294755,
+      "scale": 3.975968335268491
+    },
+    "spo2_time_since_last_measure": {
+      "mean": 0.5187256095840515,
+      "scale": 0.4111391622331755
+    },
+    "temperature_mean": {
+      "mean": 98.18652823965506,
+      "scale": 1.0567781969210244
+    },
+    "temperature_slope": {
+      "mean": 0.0482328205708817,
+      "scale": 0.3849964997178303
+    },
+    "temperature_delta": {
+      "mean": 0.1562945067317165,
+      "scale": 1.097756086026002
+    },
+    "temperature_range": {
+      "mean": 0.6152508910475925,
+      "scale": 0.8518563723282148
+    },
+    "temperature_time_since_last_measure": {
+      "mean": 2.0361943337914754,
+      "scale": 1.461676133925105
+    },
+    "sbp_mean": {
+      "mean": 119.75375816744857,
+      "scale": 18.451594411691847
+    },
+    "sbp_slope": {
+      "mean": -1.503156716512595,
+      "scale": 7.216295573438231
+    },
+    "sbp_delta": {
+      "mean": -7.236974213463877,
+      "scale": 22.95755899508629
+    },
+    "sbp_range": {
+      "mean": 36.76018590240124,
+      "scale": 21.365325752362335
+    },
+    "sbp_time_since_last_measure": {
+      "mean": 0.5511312333247267,
+      "scale": 0.5106950740334784
+    },
+    "dbp_mean": {
+      "mean": 65.20631779316238,
+      "scale": 12.361846246218102
+    },
+    "dbp_slope": {
+      "mean": -1.0199760832873186,
+      "scale": 4.489432781174141
+    },
+    "dbp_delta": {
+      "mean": -5.2623783986031425,
+      "scale": 16.52601663053528
+    },
+    "dbp_range": {
+      "mean": 25.85192873741286,
+      "scale": 16.85390761617327
+    },
+    "dbp_time_since_last_measure": {
+      "mean": 0.5512370944143213,
+      "scale": 0.5108251623263658
+    },
+    "map_mean": {
+      "mean": 80.49506423951358,
+      "scale": 12.942408743457095
+    },
+    "map_slope": {
+      "mean": -1.2387605193408422,
+      "scale": 5.589362223738403
+    },
+    "map_delta": {
+      "mean": -5.88340975016375,
+      "scale": 18.047364796992397
+    },
+    "map_range": {
+      "mean": 30.094144269816177,
+      "scale": 25.20862766647708
+    },
+    "map_time_since_last_measure": {
+      "mean": 0.5502317375684994,
+      "scale": 0.5098813617277352
+    },
+    "creatinine_worst": {
+      "mean": 1.34778557808979,
+      "scale": 1.3781957432837164
+    },
+    "creatinine_last": {
+      "mean": 1.3376148379268504,
+      "scale": 1.3626555154421562
+    },
+    "platelets_worst": {
+      "mean": 193.2128893994962,
+      "scale": 97.89902782654131
+    },
+    "platelets_last": {
+      "mean": 198.03525252971588,
+      "scale": 96.5227074276288
+    },
+    "bun_worst": {
+      "mean": 24.48809058961343,
+      "scale": 20.12221863082884
+    },
+    "bun_last": {
+      "mean": 24.350043819688487,
+      "scale": 19.962785621138934
+    },
+    "wbc_worst": {
+      "mean": 13.118817276043051,
+      "scale": 6.937169170141321
+    },
+    "wbc_last": {
+      "mean": 12.874004692643002,
+      "scale": 6.8222988064461925
+    },
+    "hemoglobin_worst": {
+      "mean": 10.509365706422832,
+      "scale": 2.2276207268141635
+    },
+    "hemoglobin_last": {
+      "mean": 10.88046961693817,
+      "scale": 2.096401303579371
+    },
+    "hematocrit_worst": {
+      "mean": 31.668708830240668,
+      "scale": 6.555982767166947
+    },
+    "hematocrit_last": {
+      "mean": 32.73655568949928,
+      "scale": 6.123172948601429
+    },
+    "sodium_worst": {
+      "mean": 138.31779907084783,
+      "scale": 5.21795575007342
+    },
+    "sodium_last": {
+      "mean": 138.19589624467673,
+      "scale": 5.217747065235766
+    },
+    "potassium_worst": {
+      "mean": 4.226475970336127,
+      "scale": 0.7443033360198426
+    },
+    "potassium_last": {
+      "mean": 4.177203120485409,
+      "scale": 0.6927941865375398
+    },
+    "chloride_worst": {
+      "mean": 104.95659856908888,
+      "scale": 6.442799627815563
+    },
+    "chloride_last": {
+      "mean": 104.83454012585122,
+      "scale": 6.392081854631146
+    },
+    "bicarbonate_worst": {
+      "mean": 22.236685231920635,
+      "scale": 4.359372087468131
+    },
+    "bicarbonate_last": {
+      "mean": 22.40242363588896,
+      "scale": 4.195952207172427
+    },
+    "glucose_worst": {
+      "mean": 158.12152549792077,
+      "scale": 79.52677523932789
+    },
+    "glucose_last": {
+      "mean": 153.13588859706718,
+      "scale": 69.79664849766286
+    },
+    "inr_worst": {
+      "mean": 1.4671774405293283,
+      "scale": 0.6375927438678621
+    },
+    "inr_last": {
+      "mean": 1.400620700519876,
+      "scale": 0.5971080009351338
+    },
+    "ptt_worst": {
+      "mean": 38.12695949500263,
+      "scale": 23.791458659964416
+    },
+    "ptt_last": {
+      "mean": 36.265451446607045,
+      "scale": 21.1072457129422
+    },
+    "pt_worst": {
+      "mean": 16.056065315551827,
+      "scale": 6.65207966293257
+    },
+    "pt_last": {
+      "mean": 15.346861283209073,
+      "scale": 6.227234041532258
+    },
+    "bilirubin_worst": {
+      "mean": 1.737171098112204,
+      "scale": 3.4867201899830436
+    },
+    "bilirubin_last": {
+      "mean": 1.7197291943632005,
+      "scale": 3.4484874652772777
+    },
+    "lactate_worst": {
+      "mean": 2.7022804085422467,
+      "scale": 1.9037434979748888
+    },
+    "lactate_last": {
+      "mean": 2.4400948932219126,
+      "scale": 1.6671030359762864
+    },
+    "gcs_eyes_min": {
+      "mean": 2.8474314041236464,
+      "scale": 1.313660740771185
+    },
+    "gcs_eyes_last": {
+      "mean": 3.0957342679422815,
+      "scale": 1.2015184852689371
+    },
+    "gcs_eyes_slope": {
+      "mean": 0.0818295352098388,
+      "scale": 0.3427527775647135
+    },
+    "gcs_eyes_delta": {
+      "mean": 0.209475742281635,
+      "scale": 0.9346379973164792
+    },
+    "gcs_verbal_min": {
+      "mean": 3.183930942895086,
+      "scale": 1.900143228725771
+    },
+    "gcs_verbal_last": {
+      "mean": 3.32182381584772,
+      "scale": 1.8900438536563455
+    },
+    "gcs_verbal_slope": {
+      "mean": 0.0265169997799933,
+      "scale": 0.2829008637703874
+    },
+    "gcs_verbal_delta": {
+      "mean": 0.0813093498904309,
+      "scale": 0.9795710041006428
+    },
+    "gcs_motor_min": {
+      "mean": 4.583985550872968,
+      "scale": 2.0726464209629967
+    },
+    "gcs_motor_last": {
+      "mean": 4.995088564276434,
+      "scale": 1.8106983625321948
+    },
+    "gcs_motor_slope": {
+      "mean": 0.1853806800689375,
+      "scale": 0.6306849609706694
+    },
+    "gcs_motor_delta": {
+      "mean": 0.4807877261277765,
+      "scale": 1.5678632339176442
+    },
+    "gcs_total_min": {
+      "mean": 10.62054067791226,
+      "scale": 4.954503635476482
+    },
+    "gcs_total_last": {
+      "mean": 11.419168334445184,
+      "scale": 4.462899408903807
+    },
+    "gcs_total_delta": {
+      "mean": 0.7986276565329267,
+      "scale": 2.123498123564703
+    },
+    "fio2_min": {
+      "mean": 53.36981906839471,
+      "scale": 19.67951611391199
+    },
+    "fio2_max": {
+      "mean": 75.7117926344155,
+      "scale": 26.150358076799535
+    },
+    "fio2_mean": {
+      "mean": 63.27421584083395,
+      "scale": 19.587985946029985
+    },
+    "fio2_last": {
+      "mean": 54.85820608238163,
+      "scale": 20.298286718237
+    },
+    "pao2_min": {
+      "mean": 156.48958413522132,
+      "scale": 85.49238786117681
+    },
+    "pao2_max": {
+      "mean": 257.6845577952406,
+      "scale": 133.2448788107049
+    },
+    "pao2_mean": {
+      "mean": 206.72377703649175,
+      "scale": 98.3075091810048
+    },
+    "pao2_last": {
+      "mean": 177.23293054340573,
+      "scale": 98.7674925187553
+    },
+    "pao2_fio2_ratio": {
+      "mean": 343.9319352587846,
+      "scale": 225.8518199707595
+    },
+    "norepinephrine_max_rate": {
+      "mean": 0.0188839806910188,
+      "scale": 0.0723476316025463
+    },
+    "norepinephrine_mean_rate": {
+      "mean": 0.0139569628747123,
+      "scale": 0.0537650183731174
+    },
+    "epinephrine_max_rate": {
+      "mean": 0.0011935810916084,
+      "scale": 0.0079601600209606
+    },
+    "epinephrine_mean_rate": {
+      "mean": 0.0010044105504673,
+      "scale": 0.0065262418049652
+    },
+    "dopamine_max_rate": {
+      "mean": 0.1096605549640511,
+      "scale": 0.9562629354828216
+    },
+    "dopamine_mean_rate": {
+      "mean": 0.0883955869636295,
+      "scale": 0.7700929655493799
+    },
+    "vasopressin_max_rate": {
+      "mean": 0.0385041544096912,
+      "scale": 0.2941004754811919
+    },
+    "vasopressin_mean_rate": {
+      "mean": 0.0370305804397233,
+      "scale": 0.2838153691920815
+    },
+    "phenylephrine_max_rate": {
+      "mean": 0.1651696783505649,
+      "scale": 0.5382329222753572
+    },
+    "phenylephrine_mean_rate": {
+      "mean": 0.118390120386838,
+      "scale": 0.3765356024719601
+    },
+    "age": {
+      "mean": 63.25868911605532,
+      "scale": 16.72878004354183
+    }
+  },
+  "mask_suffix": "_missing",
+  "random_state": 42,
+  "test_size": 0.15,
+  "outlier_low": 0.005,
+  "outlier_high": 0.995
+}

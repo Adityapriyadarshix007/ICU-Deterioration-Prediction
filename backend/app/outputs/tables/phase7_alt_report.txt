@@ -1,0 +1,83 @@
+======================================================================
+PHASE 7: INTERPRETABILITY AND CLINICAL UTILITY REPORT
+======================================================================
+Feature window: 0-6h
+Outcome: ΔSOFA ≥ 2 at 6-18h
+
+TOP 15 FEATURES BY MEAN |SHAP|:
+----------------------------------------------------------------------
+   1. bun_worst_missing                        0.1879
+   2. gcs_total_min                            0.1547
+   3. gcs_total_min_missing                    0.1545
+   4. gcs_total_delta                          0.1458
+   5. respiratory_rate_mean                    0.1202
+   6. glucose_worst_missing                    0.1133
+   7. platelets_worst_missing                  0.1084
+   8. pao2_min                                 0.1060
+   9. fio2_max                                 0.1057
+  10. admission_SURGICAL SAME DAY ADMISSION    0.0815
+  11. lactate_last                             0.0730
+  12. heart_rate_mean                          0.0728
+  13. bun_worst                                0.0579
+  14. fio2_last                                0.0567
+  15. bicarbonate_worst_missing                0.0566
+
+TOP 10 MASKS BY MEAN |SHAP|:
+----------------------------------------------------------------------
+   1. bun_worst_missing                        0.1879
+   2. gcs_total_min_missing                    0.1545
+   3. glucose_worst_missing                    0.1133
+   4. platelets_worst_missing                  0.1084
+   5. bicarbonate_worst_missing                0.0566
+   6. temperature_mean_missing                 0.0243
+   7. heart_rate_slope_missing                 0.0238
+   8. potassium_worst_missing                  0.0197
+   9. fio2_min_missing                         0.0178
+  10. bilirubin_worst_missing                  0.0150
+
+THRESHOLD TUNING:
+----------------------------------------------------------------------
+  Target recall: 0.8
+  Selection: max F1 subject to recall >= target
+  Selected threshold: 0.390
+  Recall:     0.8054
+  Precision:  0.3179
+  Specificity:0.5971
+  NPV:        0.9294
+  F1:         0.4559
+  TP/FP/FN/TN: 894/1918/216/2842
+
+BOOTSTRAP 95% CIs (1000 resamples, at selected threshold):
+----------------------------------------------------------------------
+  recall      : 0.8059 [0.7835, 0.8291]
+  precision   : 0.3180 [0.3009, 0.3349]
+  f1          : 0.4560 [0.4363, 0.4750]
+  auroc       : 0.7956 [0.7815, 0.8096]
+  auprc       : 0.5664 [0.5381, 0.5930]
+  specificity : 0.5972 [0.5827, 0.6108]
+  npv         : 0.9296 [0.9206, 0.9381]
+
+REFERENCE METRICS AT THRESHOLD = 0.50:
+----------------------------------------------------------------------
+  recall      : 0.6595
+  auroc       : 0.7954
+  auprc       : 0.5658
+  precision   : 0.3857
+  f1          : 0.4867
+  accuracy    : 0.7370
+  brier       : 0.1704
+
+DECISION CURVE ANALYSIS:
+----------------------------------------------------------------------
+  Max net benefit: 0.1484 at threshold=0.05
+  Model exceeds treat-all for thresholds where net_benefit_model > net_benefit_treat_all
+
+CALIBRATION:
+----------------------------------------------------------------------
+  Brier score: 0.1704
+
+NOTE:
+----------------------------------------------------------------------
+  All analyses on held-out test set (n=8,176).
+  SHAP computed on full test set.
+  Imputation fit on train only (no leakage).

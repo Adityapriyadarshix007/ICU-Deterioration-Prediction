@@ -1,0 +1,18 @@
+{
+  "best_imputation": "zero",
+  "best_model": "lightgbm",
+  "best_mask_variant": "with_masks",
+  "best_recall": 0.6564387917329094,
+  "best_recall_std": 0.014607802524034845,
+  "best_auroc": 0.7950652052300943,
+  "best_auprc": 0.5521954304251446,
+  "best_f1": 0.49139862185170263,
+  "n_features": 160,
+  "selection_metric": "auprc",
+  "mask_delta_recall": -0.0111287758346581,
+  "mask_delta_auroc": 0.0031926482525186373,
+  "mask_delta_auprc": 0.003899809493998818,
+  "robustness": "Robust",
+  "sensitivity_auroc_range": 0.005361685214626433,
+  "sensitivity_recall_range": 0.01531531531531527
+}

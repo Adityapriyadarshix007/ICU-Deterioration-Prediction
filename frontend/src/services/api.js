@@ -210,6 +210,40 @@ const predictions = {
       return { data: [] };
     }
   },
+  // ---------- new: single-patient-by-stay-id flow ----------
+  predictByStayId: async (stayId) => {
+    try {
+      const response = await api.post(`/predict/patient/${stayId}/predict`);
+      return response;
+    } catch (error) {
+      console.error('Stay-ID prediction error:', error);
+      throw error;
+    }
+  },
+  getPatientFeatures: async (stayId) => {
+    // Uses the axios instance defined at the top of this file.
+    const response = await api.get(`/predict/patient/${stayId}/features`);
+    return response;
+  },
+  // aliases used elsewhere in the codebase
+  getRecent: async (limit = 20) => {
+    try {
+      const response = await api.get(`/predict/recent?limit=${limit}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to load recent predictions:', error);
+      return { data: [] };
+    }
+  },
+  getByPatient: async (patientId, limit = 10) => {
+    try {
+      const response = await api.get(`/predict/patient/${patientId}?limit=${limit}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to load patient predictions:', error);
+      return { data: [] };
+    }
+  },
 };
 
 // ============================================================
@@ -218,21 +252,9 @@ const predictions = {
 
 const dashboard = {
   getDashboardStats: async () => {
-    try {
-      const response = await api.get('/dashboard/stats');
-      return response;
-    } catch (error) {
-      console.error('Failed to load dashboard stats:', error);
-      return { 
-        data: {
-          total_predictions: 0,
-          high_risk_patients: 0,
-          critical_alerts: 0,
-          avg_risk_score: 0,
-          recent_predictions: []
-        }
-      };
-    }
+    // Let errors propagate so callers can decide whether to keep prior data
+    const response = await api.get('/dashboard/stats');
+    return response;
   },
 };
 

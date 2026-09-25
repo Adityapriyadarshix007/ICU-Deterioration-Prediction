@@ -1,0 +1,25 @@
+============================================================
+MISSINGNESS CHARACTERIZATION SUMMARY
+============================================================
+Feature Window: 0-6 hours
+Outcome Window: 6-18 hours
+TARGET: Organ Dysfunction Progression (ΔSOFA ≥ 2)
+⚠️  NO DATA LEAKAGE
+============================================================
+
+MISSINGNESS TYPE CLASSIFICATION:
+  MCAR: 0 features
+  MAR: 0 features
+  MNAR: 14 features
+
+TOP 10 FEATURES WITH HIGHEST MISSING RATE:
+  dbp_mean: 25.3% (MNAR)
+  sbp_mean: 25.3% (MNAR)
+  temperature_mean: 13.4% (MNAR)
+  respiratory_rate_mean: 2.6% (MNAR)
+  rr_mean: 2.6% (MNAR)
+  spo2_min_x: 2.3% (MNAR)
+  spo2_max_x: 2.3% (MNAR)
+  spo2_mean_x: 2.3% (MNAR)
+  spo2_last_x: 2.3% (MNAR)
+  spo2_min_y: 2.3% (MNAR)
