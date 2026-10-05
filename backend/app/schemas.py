@@ -115,6 +115,10 @@ class PatientData(BaseModel):
     # --- identifiers (not model features) ---
     patient_id: str
     patient_name: str = Field(..., min_length=1)
+    stay_id: Optional[int] = Field(
+        default=None,
+        description="ICU stay_id from MIMIC-IV — only for stay-ID flow; null for manual entry",
+    )
 
     # --- demographics ---
     age: Optional[float] = Field(default=None, ge=0, le=120)

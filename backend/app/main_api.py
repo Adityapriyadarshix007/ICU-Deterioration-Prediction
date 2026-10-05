@@ -7,6 +7,16 @@ import logging
 from pathlib import Path
 
 # ------------------------------------------------------------------
+# Configure logging FIRST — before any other logger is created.
+# This makes logger.info/error from route modules visible in uvicorn.
+# ------------------------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+# ------------------------------------------------------------------
 # Ensure backend/app/ is on sys.path (flat imports work everywhere)
 # ------------------------------------------------------------------
 _THIS_DIR = str(Path(__file__).parent.absolute())
@@ -20,6 +30,11 @@ try:
     from .config_api import settings
 except ImportError:
     from config_api import settings
+
+# Ensure our own loggers emit INFO
+logging.getLogger("app").setLevel(logging.INFO)
+logging.getLogger("app.routes.predictions").setLevel(logging.INFO)
+logging.getLogger("app.routes.auth").setLevel(logging.INFO)
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,7 @@
 """
 Prediction Routes
+Writes consistent documents to predictions, patients, and logs.
+stay_id is null for manual entry, integer for stay-ID flow.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -13,142 +15,167 @@ from app.database import Database
 try:
     from app.ml_model import ml_model
 except ImportError:
-    # Running from inside backend/app/
     from ml_model import ml_model
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
 def get_db():
     return Database.get_db()
 
 
+# ============================================================
+# Shared persistence helper
+# Writes ONE prediction event to predictions + patients + logs
+# with a consistent stay_id field (int or null).
+# ============================================================
+def _persist_prediction(
+    db,
+    *,
+    patient_id: str,
+    patient_name: str | None,
+    stay_id: int | None,
+    user_id: str,
+    username: str,
+    risk_score: float,
+    alert_level: str,
+    confidence: str,
+    features,
+    vitals: dict | None = None,
+    patient_meta: dict | None = None,
+):
+    now = datetime.utcnow()
+
+    # ---- 1. predictions ----
+    pred_doc = {
+        "patient_id": patient_id,
+        "patient_name": patient_name,
+        "stay_id": stay_id,                       # always present
+        "user_id": user_id,
+        "username": username,
+        "risk_score": risk_score,
+        "risk_percentage": risk_score * 100,
+        "alert_level": alert_level,
+        "confidence": confidence,
+        "features": features,
+        "is_high_risk": risk_score > 0.5,
+        "created_at": now,
+    }
+    pred_result = db.predictions.insert_one(pred_doc)
+    pred_id = str(pred_result.inserted_id)
+    logger.info(f"✅ Prediction saved: {pred_id}")
+
+    # ---- 2. patients (upsert) ----
+    patient_update = {
+        "patient_id": patient_id,
+        "patient_name": patient_name,
+        "stay_id": stay_id,                       # always present
+        "risk_level": alert_level,
+        "updated_at": now,
+    }
+    if vitals:
+        patient_update["vitals"] = vitals
+    if patient_meta:
+        for k in ("age", "gender", "room", "diagnosis", "status"):
+            if patient_meta.get(k) is not None:
+                patient_update[k] = patient_meta[k]
+    patient_update.setdefault("status", "Active")
+
+    db.patients.update_one(
+        {"patient_id": patient_id},
+        {
+            "$set": patient_update,
+            "$setOnInsert": {"created_at": now},
+        },
+        upsert=True,
+    )
+    logger.info(f"✅ Patient upserted: {patient_id}")
+
+    # ---- 3. logs ----
+    db.logs.insert_one({
+        "user_id": user_id,
+        "username": username,
+        "action": "PREDICTION",
+        "patient_id": patient_id,
+        "patient_name": patient_name,
+        "stay_id": stay_id,                       # always present
+        "alert_level": alert_level,
+        "risk_score": risk_score,
+        "prediction_id": pred_id,
+        "created_at": now,
+    })
+    logger.info(f"✅ Log saved for: {username}")
+
+    return pred_id
+
+
+# ============================================================
+# POST /api/predict/public  — manual entry (no stay_id)
+# ============================================================
 @router.post("/public", response_model=schemas.PredictionResponse)
 async def predict_public(
     patient_data: schemas.PatientData,
-    current_user: dict = Depends(auth.get_current_user)
+    current_user: dict = Depends(auth.get_current_user),
 ):
-    """Public prediction endpoint - Now requires authentication"""
     db = get_db()
-    
     logger.info(f"📊 Prediction request for: {patient_data.patient_id}")
-    logger.info(f"📊 Patient data: {patient_data.dict()}")
-    logger.info(f"👤 User: {current_user.get('username', 'unknown')}")
-    
+
     try:
-        # Use the ML model to make prediction
         risk_score = ml_model.predict(patient_data)
-        
-        # Ensure risk_score is within bounds
         risk_score = max(0.0, min(1.0, risk_score))
-        
+
         if risk_score > 0.7:
-            alert_level = "CRITICAL"
-            confidence = "HIGH"
+            alert_level, confidence = "CRITICAL", "HIGH"
         elif risk_score > 0.5:
-            alert_level = "HIGH"
-            confidence = "MEDIUM"
+            alert_level, confidence = "HIGH", "MEDIUM"
         elif risk_score > 0.3:
-            alert_level = "MEDIUM"
-            confidence = "LOW"
+            alert_level, confidence = "MEDIUM", "LOW"
         else:
-            alert_level = "LOW"
-            confidence = "LOW"
-        
-        features = ['heart_rate', 'sbp', 'dbp', 'gcs', 'lactate', 'urine_output', 'fio2', 'creatinine']
-        
-        # Get user info
-        user_id = current_user.get("_id")
+            alert_level, confidence = "LOW", "LOW"
+
+        features = ['heart_rate', 'sbp', 'dbp', 'gcs', 'lactate',
+                    'urine_output', 'fio2', 'creatinine']
+
+        user_id = str(current_user.get("_id", "unknown"))
         username = current_user.get("username", "unknown")
-        
-        # Save prediction to database
+
+        vitals = {
+            "heart_rate": patient_data.heart_rate,
+            "sbp": patient_data.sbp,
+            "dbp": patient_data.dbp,
+            "gcs": getattr(patient_data, "gcs_total", None) or getattr(patient_data, "gcs", None),
+            "lactate": patient_data.lactate,
+            "urine_output": getattr(patient_data, "urine_output", None),
+            "fio2": patient_data.fio2,
+            "creatinine": patient_data.creatinine,
+        }
+        meta = {
+            "age": getattr(patient_data, "age", None),
+            "gender": getattr(patient_data, "gender", None),
+            "room": getattr(patient_data, "room", None),
+            "diagnosis": getattr(patient_data, "diagnosis", None),
+            "status": getattr(patient_data, "status", None),
+        }
+
         try:
-            prediction_doc = {
-                "patient_id": patient_data.patient_id,
-                "patient_name": patient_data.patient_name,
-                "user_id": str(user_id) if user_id else "unknown",
-                "username": username,
-                "risk_score": risk_score,
-                "risk_percentage": risk_score * 100,
-                "alert_level": alert_level,
-                "confidence": confidence,
-                "features": patient_data.dict(),
-                "is_high_risk": risk_score > 0.5,
-                "created_at": datetime.utcnow()
-            }
-            result = db.predictions.insert_one(prediction_doc)
-            prediction_id = str(result.inserted_id)
-            logger.info(f"✅ Prediction saved to database with ID: {prediction_id}")
-            
-            # ============================================================
-            # CRITICAL FIX: Also save to logs collection for activity tracking
-            # ============================================================
-            log_doc = {
-                "user_id": str(user_id) if user_id else "unknown",
-                "username": username,
-                "action": "PREDICTION",
-                "patient_id": patient_data.patient_id,
-                "patient_name": patient_data.patient_name,
-                "alert_level": alert_level,
-                "risk_score": risk_score,
-                "prediction_id": prediction_id,
-                "created_at": datetime.utcnow()
-            }
-            db.logs.insert_one(log_doc)
-            logger.info(f"✅ Activity log saved for user: {username}")
-            
-        except Exception as e:
-            logger.warning(f"Could not save prediction: {e}")
-        
-        # ============================================================
-        # Create or update patient record
-        # ============================================================
-        try:
-            patient_update = {
-                "patient_id": patient_data.patient_id,
-                "patient_name": patient_data.patient_name,
-                "risk_level": alert_level,
-                "updated_at": datetime.utcnow(),
-                "vitals": {
-                    "heart_rate": patient_data.heart_rate,
-                    "sbp": patient_data.sbp,
-                    "dbp": patient_data.dbp,
-                    "gcs": patient_data.gcs,
-                    "lactate": patient_data.lactate,
-                    "urine_output": patient_data.urine_output,
-                    "fio2": patient_data.fio2,
-                    "creatinine": patient_data.creatinine
-                }
-            }
-            
-            if hasattr(patient_data, 'age') and patient_data.age:
-                patient_update["age"] = patient_data.age
-            if hasattr(patient_data, 'gender') and patient_data.gender:
-                patient_update["gender"] = patient_data.gender
-            if hasattr(patient_data, 'room') and patient_data.room:
-                patient_update["room"] = patient_data.room
-            if hasattr(patient_data, 'diagnosis') and patient_data.diagnosis:
-                patient_update["diagnosis"] = patient_data.diagnosis
-            if hasattr(patient_data, 'status') and patient_data.status:
-                patient_update["status"] = patient_data.status
-            else:
-                patient_update["status"] = "Active"
-            
-            db.patients.update_one(
-                {"patient_id": patient_data.patient_id},
-                {
-                    "$set": patient_update,
-                    "$setOnInsert": {
-                        "created_at": datetime.utcnow()
-                    }
-                },
-                upsert=True
+            _persist_prediction(
+                db,
+                patient_id=patient_data.patient_id,
+                patient_name=patient_data.patient_name,
+                stay_id=getattr(patient_data, "stay_id", None),   # usually None
+                user_id=user_id,
+                username=username,
+                risk_score=risk_score,
+                alert_level=alert_level,
+                confidence=confidence,
+                features=patient_data.dict(),
+                vitals=vitals,
+                patient_meta=meta,
             )
-            logger.info(f"✅ Patient updated: {patient_data.patient_id}")
-                
         except Exception as e:
-            logger.warning(f"Could not create/update patient: {e}")
-        
+            logger.error(f"❌ Persist failed: {e}", exc_info=True)
+
         return schemas.PredictionResponse(
             patient_id=patient_data.patient_id,
             risk_score=round(risk_score, 4),
@@ -156,22 +183,22 @@ async def predict_public(
             alert_level=alert_level,
             confidence=confidence,
             features_used=features,
-            predicted_at=datetime.utcnow()
+            predicted_at=datetime.utcnow(),
         )
     except Exception as e:
-        logger.error(f"Prediction error: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
 
 
+# ============================================================
+# GET /api/predict/patient/{patient_id}
+# ============================================================
 @router.get("/patient/{patient_id}")
 async def get_patient_predictions(
     patient_id: str,
     limit: int = 10,
-    current_user: dict = Depends(auth.get_current_user)
+    current_user: dict = Depends(auth.get_current_user),
 ):
-    """Get prediction history for a patient"""
     db = get_db()
     cursor = db.predictions.find({"patient_id": patient_id}).sort("created_at", -1).limit(limit)
     result = []
@@ -181,12 +208,14 @@ async def get_patient_predictions(
     return result
 
 
+# ============================================================
+# GET /api/predict/recent
+# ============================================================
 @router.get("/recent")
 async def get_recent_predictions(
     limit: int = 20,
-    current_user: dict = Depends(auth.get_current_user)
+    current_user: dict = Depends(auth.get_current_user),
 ):
-    """Get recent predictions"""
     db = get_db()
     cursor = db.predictions.find().sort("created_at", -1).limit(limit)
     result = []
@@ -195,28 +224,23 @@ async def get_recent_predictions(
         result.append(p)
     return result
 
-# ============================================================
-# Single-patient prediction by stay_id (research demo path)
-# ============================================================
 
+# ============================================================
+# POST /api/predict/patient/{stay_id}/predict  — stay-ID flow
+# ============================================================
 @router.post("/patient/{stay_id}/predict")
 async def predict_by_stay_id(
     stay_id: int,
     current_user: dict = Depends(auth.get_current_user),
 ):
-    """
-    Pull the patient's ICU stay, run Phase-3 feature extraction + model,
-    return probability + top SHAP contributions.
-
-    This is the "one-click" clinical path: caller only supplies stay_id.
-    """
     import sys
     from pathlib import Path
-    _here = Path(__file__).resolve().parent.parent   # backend/app/
+    _here = Path(__file__).resolve().parent.parent
     if str(_here) not in sys.path:
         sys.path.insert(0, str(_here))
 
     from serve_single_patient import get_single_patient_predictor
+
     try:
         predictor = get_single_patient_predictor()
         result = predictor.predict(stay_id)
@@ -226,45 +250,37 @@ async def predict_by_stay_id(
         import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
 
-    # Persist to MongoDB for history/recent views
     db = get_db()
+    user_id = str(current_user.get("_id", "unknown"))
+    username = current_user.get("username", "unknown")
+
     try:
-        db.predictions.insert_one({
-            "patient_id": str(stay_id),
-            "stay_id": stay_id,
-            "user_id": str(current_user.get("_id", "unknown")),
-            "username": current_user.get("username", "unknown"),
-            "risk_score": result["probability"],
-            "risk_percentage": result["probability"] * 100,
-            "alert_level": result["risk_band"],
-            "features": result.get("top_features", []),
-            "created_at": datetime.utcnow(),
-        })
+        _persist_prediction(
+            db,
+            patient_id=str(stay_id),
+            patient_name=None,
+            stay_id=stay_id,                      # ← set for stay-ID flow
+            user_id=user_id,
+            username=username,
+            risk_score=result["probability"],
+            alert_level=result["risk_band"],
+            confidence="MODEL",
+            features=result.get("top_features", []),
+        )
     except Exception as e:
-        logger.warning(f"Could not save prediction: {e}")
+        logger.error(f"❌ Persist failed: {e}", exc_info=True)
 
     return result
 
 
 # ============================================================
-# Unified predict endpoint — routes BOTH form and stay-id
-# sources through the same SinglePatientPredictor.predict_from_dict
+# POST /api/predict/unified  — unified form path
 # ============================================================
-
 @router.post("/unified")
 async def predict_unified(
     patient_data: schemas.PatientData,
     current_user: dict = Depends(auth.get_current_user),
 ):
-    """
-    Unified prediction endpoint.
-
-    Takes the same PatientData schema the manual form already sends,
-    converts it to model features via MLModel._build_model_input, then
-    runs it through the same SinglePatientPredictor.predict_from_dict
-    used by the stay-id flow. Result: manual form and stay-id flow
-    produce consistent probabilities for identical inputs.
-    """
     import sys
     from pathlib import Path
     _here = Path(__file__).resolve().parent.parent
@@ -283,37 +299,57 @@ async def predict_unified(
         import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
 
-    # Persist for history
     db = get_db()
+    user_id = str(current_user.get("_id", "unknown"))
+    username = current_user.get("username", "unknown")
+
+    vitals = {
+        "heart_rate": patient_data.heart_rate,
+        "sbp": patient_data.sbp,
+        "dbp": patient_data.dbp,
+        "gcs": getattr(patient_data, "gcs_total", None) or getattr(patient_data, "gcs", None),
+        "lactate": patient_data.lactate,
+        "urine_output": getattr(patient_data, "urine_output", None),
+        "fio2": patient_data.fio2,
+        "creatinine": patient_data.creatinine,
+    }
+    meta = {
+        "age": getattr(patient_data, "age", None),
+        "gender": getattr(patient_data, "gender", None),
+        "room": getattr(patient_data, "room", None),
+        "diagnosis": getattr(patient_data, "diagnosis", None),
+        "status": getattr(patient_data, "status", None),
+    }
+
     try:
-        db.predictions.insert_one({
-            "patient_id": patient_data.patient_id,
-            "patient_name": patient_data.patient_name,
-            "user_id": str(current_user.get("_id", "unknown")),
-            "username": current_user.get("username", "unknown"),
-            "risk_score": result["probability"],
-            "risk_percentage": result["probability"] * 100,
-            "alert_level": result["risk_band"],
-            "features": result.get("top_features", []),
-            "created_at": datetime.utcnow(),
-        })
+        _persist_prediction(
+            db,
+            patient_id=patient_data.patient_id,
+            patient_name=patient_data.patient_name,
+            stay_id=getattr(patient_data, "stay_id", None),
+            user_id=user_id,
+            username=username,
+            risk_score=result["probability"],
+            alert_level=result["risk_band"],
+            confidence="MODEL",
+            features=result.get("top_features", []),
+            vitals=vitals,
+            patient_meta=meta,
+        )
     except Exception as e:
-        logger.warning(f"Could not save prediction: {e}")
+        logger.error(f"❌ Persist failed: {e}", exc_info=True)
 
     return result
 
 
+# ============================================================
+# GET /api/predict/patient/{stay_id}/features
+# ============================================================
 @router.get("/patient/{stay_id}/features")
 async def get_patient_features(
     stay_id: int,
     current_user: dict = Depends(auth.get_current_user),
 ):
-    """
-    Return the ~40 form-relevant features for a stay, keyed by form field name.
-    Used by the frontend "Load from chart" button: clicking it populates the
-    manual form with real values from the ICU chart, which the clinician can
-    then edit before predicting.
-    """
     import sys
     from pathlib import Path
     _here = Path(__file__).resolve().parent.parent
@@ -331,11 +367,7 @@ async def get_patient_features(
         import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Feature extraction failed: {e}")
 
-    # Map model feature name -> form field name (reverse of FIELD_MAP)
-    reverse = {}
-    for form_field, (model_col, _tfm) in FIELD_MAP.items():
-        reverse[model_col] = form_field
-
+    reverse = {v[0]: k for k, v in FIELD_MAP.items()}
     result = {}
     for model_col, form_field in reverse.items():
         if model_col in features_df.columns:
