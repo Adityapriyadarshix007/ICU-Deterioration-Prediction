@@ -106,3 +106,4 @@ id_rsa*
 *.pkl.corrupt
 *.pkl.bak
 *.csv.bak
+backend/catboost_info/
