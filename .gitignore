@@ -102,3 +102,7 @@ id_rsa*
 *.p12
 *.pfx
 .vercel
+*.pkl.joblib_corrupt
+*.pkl.corrupt
+*.pkl.bak
+*.csv.bak
