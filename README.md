@@ -551,7 +551,7 @@ npm install
 
 ---
 
-## ▶️ Running the Application
+## ▶ Running the Application
 
 ### Terminal 1 — Backend
 
