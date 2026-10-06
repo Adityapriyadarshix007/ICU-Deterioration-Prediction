@@ -260,7 +260,10 @@ export const StayIdAssessmentForm = ({ onResult, onLoadFromChart }) => {
       if (count === 0) {
         setError('No form-relevant features were returned for this stay.');
       } else {
-        onLoadFromChart?.(features);
+        // 🔧 FIX: pass stay_id (from backend response, or fallback to
+        // the trimmed input) so Dashboard can persist it on next Analyze.
+        const returnedStayId = data?.stay_id ?? Number(trimmed);
+        onLoadFromChart?.(features, returnedStayId);
       }
     } catch (err) {
       const msg =

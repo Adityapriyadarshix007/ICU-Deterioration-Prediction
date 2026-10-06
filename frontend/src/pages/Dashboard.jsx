@@ -35,6 +35,10 @@ function Dashboard() {
   const [patientDiagnosis, setPatientDiagnosis] = useState('');
   const [patientRoom, setPatientRoom] = useState('');
   const [patientId] = useState(formatPatientId());
+
+  // 🔧 FIX: remember the stay_id loaded from chart, so "Analyze" persists it
+  const [loadedStayId, setLoadedStayId] = useState(null);
+
   const [vitals, setVitals] = useState({
     heart_rate: '', respiratory_rate: '', spo2: '', temperature: '',
     sbp: '', dbp: '', map: '',
@@ -66,7 +70,6 @@ function Dashboard() {
       setStats(response.data);
     } catch (error) {
       console.error('Failed to load stats:', error);
-      // Keep any previously loaded stats on failure
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -79,7 +82,6 @@ function Dashboard() {
       setRecentPredictions(response.data || []);
     } catch (error) {
       console.error('Failed to load recent predictions:', error);
-      // Keep prior list on failure
     }
   }, []);
 
@@ -100,21 +102,21 @@ function Dashboard() {
     setPrediction(null);
     setPredictingSteps([]);
 
-    // Blank ALL vitals keys without removing any (preserves the 33-field schema)
     setVitals((prev) => {
       const blanked = {};
       Object.keys(prev).forEach((k) => { blanked[k] = ''; });
       return blanked;
     });
 
-    // Clear demographic text inputs (keep MRN / patientId as-is)
     setPatientName('');
     setPatientAge('');
     setPatientGender('');
     setPatientDiagnosis('');
     setPatientRoom('');
 
-    // Reload stats + recent in parallel; the loaders themselves preserve data on failure
+    // 🔧 FIX: also clear the loaded stay_id on refresh
+    setLoadedStayId(null);
+
     await Promise.allSettled([loadStats(), loadRecentPredictions()]);
 
     setRefreshing(false);
@@ -161,7 +163,6 @@ function Dashboard() {
     await simulatePredictionSteps();
 
     try {
-      // Helper: numeric -> number; blank -> omit (backend treats as missing)
       const num = (v) => {
         if (v === '' || v === null || v === undefined) return undefined;
         const f = parseFloat(v);
@@ -175,6 +176,10 @@ function Dashboard() {
         gender: patientGender,
         room: patientRoom,
         diagnosis: patientDiagnosis,
+        // 🔧 FIX: include stay_id from the "Load from chart" step
+        // Backend stores this in predictions/patients/logs.
+        // If user didn't load from chart, this is null.
+        stay_id: loadedStayId ?? undefined,
         // vitals
         heart_rate: num(vitals.heart_rate),
         respiratory_rate: num(vitals.respiratory_rate),
@@ -183,15 +188,12 @@ function Dashboard() {
         sbp: num(vitals.sbp),
         dbp: num(vitals.dbp),
         map: num(vitals.map),
-        // respiratory
         fio2: num(vitals.fio2),
         pao2: num(vitals.pao2),
-        // neuro
         gcs_eyes: num(vitals.gcs_eyes),
         gcs_verbal: num(vitals.gcs_verbal),
         gcs_motor: num(vitals.gcs_motor),
         gcs: num(vitals.gcs),
-        // chemistry
         creatinine: num(vitals.creatinine),
         bun: num(vitals.bun),
         sodium: num(vitals.sodium),
@@ -199,22 +201,17 @@ function Dashboard() {
         chloride: num(vitals.chloride),
         bicarbonate: num(vitals.bicarbonate),
         glucose: num(vitals.glucose),
-        // hematology
         hemoglobin: num(vitals.hemoglobin),
         hematocrit: num(vitals.hematocrit),
         wbc: num(vitals.wbc),
         platelets: num(vitals.platelets),
-        // coagulation
         inr: num(vitals.inr),
         ptt: num(vitals.ptt),
-        // liver
         bilirubin: num(vitals.bilirubin),
         alt: num(vitals.alt),
         ast: num(vitals.ast),
-        // misc
         lactate: num(vitals.lactate),
         urine_output: num(vitals.urine_output),
-        // vasopressors
         norepinephrine_max_rate: num(vitals.norepinephrine_max_rate),
         epinephrine_max_rate: num(vitals.epinephrine_max_rate),
         dopamine_max_rate: num(vitals.dopamine_max_rate),
@@ -223,12 +220,12 @@ function Dashboard() {
         phenylephrine_max_rate: num(vitals.phenylephrine_max_rate),
       };
 
-      // Remove undefined keys so the JSON body is clean
       Object.keys(data).forEach((k) => {
         if (data[k] === undefined) delete data[k];
       });
 
       console.log('📤 Sending prediction data:', data);
+      console.log('🔧 stay_id in payload:', data.stay_id ?? '(null)');
 
       const response = await api.predict(data);
       const predictionData = response.data || {};
@@ -254,16 +251,18 @@ function Dashboard() {
       });
 
       toast.success('Clinical risk assessment generated successfully');
+
+      // 🔧 FIX: clear the loaded stay_id after successful prediction so a
+      // subsequent manual entry doesn't accidentally reuse the old one.
+      setLoadedStayId(null);
+
       loadRecentPredictions();
     } catch (error) {
       console.error('❌ Prediction failed:', error);
 
-      // Extract a string from the API error, handling Pydantic's
-      // 422 array-of-objects shape: [{loc, msg, type, ...}, ...]
       const raw = error.response?.data?.detail;
       let errorMsg;
       if (Array.isArray(raw)) {
-        // Pydantic validation error
         errorMsg = raw
           .map((e) => {
             const field = Array.isArray(e?.loc) ? e.loc.slice(-1)[0] : 'field';
@@ -280,7 +279,6 @@ function Dashboard() {
 
       toast.error(errorMsg);
 
-      // Fallback placeholder — clearly marked so it is not mistaken for model output
       setPrediction({
         patient_id: patientId,
         patient_name: patientName,
@@ -321,7 +319,6 @@ function Dashboard() {
     }
   };
 
-  // --- additive: stay_id flow ---
   const normalizeStayIdResult = (raw) => {
     const probability = Number(raw?.probability ?? 0);
     const riskBand = raw?.risk_band || 'LOW';
@@ -358,14 +355,12 @@ function Dashboard() {
     }
   };
 
-  // --- additive: load features from chart into the manual form ---
-  const handleLoadFromChart = (features) => {
-    // Map backend feature names -> form field names where they differ.
+  // 🔧 FIX: accept stayId as second argument, remember it for the next Analyze click
+  const handleLoadFromChart = (features, stayId) => {
     const FEATURE_TO_FORM = {
       gcs_total: 'gcs',
     };
 
-    // Rounding precision per form field (matches the form's UX).
     const DECIMALS = {
       heart_rate: 0, respiratory_rate: 0, spo2: 0, temperature: 1,
       sbp: 0, dbp: 0, map: 0,
@@ -405,7 +400,6 @@ function Dashboard() {
       return merged;
     });
 
-    // Auto-fill top-level demographics (not part of vitals state)
     if ('age' in features && features.age != null) {
       setPatientAge(String(Math.round(features.age)));
     }
@@ -413,7 +407,11 @@ function Dashboard() {
       setPatientGender(features.gender_male >= 0.5 ? 'Male' : 'Female');
     }
 
-    if (populated === 0) {
+    // 🔧 FIX: remember the stay_id so "Analyze Clinical Risk" persists it
+    setLoadedStayId(stayId ?? null);
+    if (stayId != null) {
+      toast.success(`Loaded ${populated} values from ICU stay ${stayId}`);
+    } else if (populated === 0) {
       toast.error('No matching fields to load — check that the chart has data');
     } else {
       toast.success(`Loaded ${populated} values from ICU chart — review before predicting`);
@@ -549,7 +547,6 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* additive: one-click prediction by ICU stay ID */}
             <div className="mt-8">
               <StayIdAssessmentForm
                 onResult={handleStayIdPredict}
