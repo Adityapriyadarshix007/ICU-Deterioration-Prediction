@@ -44,3 +44,4 @@ seaborn==0.13.2
 
 # ---- Interpretability ----
 pyampute
+httpx>=0.27.0
