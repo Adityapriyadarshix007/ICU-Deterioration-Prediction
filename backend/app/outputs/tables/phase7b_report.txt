@@ -2,7 +2,7 @@
 PHASE 7b: CNN-LSTM INTERPRETABILITY REPORT
 ======================================================================
 Feature window: 0-6h
-Outcome: ΔSOFA ≥ 2 at 6-18h
+Outcome: dSOFA >= 2 at 6-18h
 
 TOP 15 CHANNELS BY PERMUTATION IMPORTANCE (AUPRC drop):
 ----------------------------------------------------------------------
@@ -47,22 +47,23 @@ MASK ABLATION:
 THRESHOLD TUNING:
 ----------------------------------------------------------------------
   Target recall: 0.8
-  Selected threshold: 0.440
-  Recall:     0.8117
-  Precision:  0.2885
-  Specificity:0.5332
-  NPV:        0.9239
-  F1:         0.4257
+  Selected threshold: 0.380
+  Threshold source: OOF train predictions (5-fold, same folds as Phase 6b) - NO TEST LEAKAGE
+  Test Recall:     0.9261
+  Test Precision:  0.2438
+  Test Specificity:0.3300
+  Test NPV:        0.9504
+  Test F1:         0.3860
 
 BOOTSTRAP 95% CIs (1000 resamples):
 ----------------------------------------------------------------------
-  recall      : 0.8114 [0.7880, 0.8344]
-  precision   : 0.2884 [0.2723, 0.3044]
-  f1          : 0.4255 [0.4063, 0.4433]
+  recall      : 0.9258 [0.9106, 0.9417]
+  precision   : 0.2436 [0.2306, 0.2563]
+  f1          : 0.3857 [0.3688, 0.4020]
   auroc       : 0.7726 [0.7568, 0.7880]
   auprc       : 0.5334 [0.5051, 0.5604]
-  specificity : 0.5333 [0.5192, 0.5481]
-  npv         : 0.9238 [0.9135, 0.9332]
+  specificity : 0.3299 [0.3166, 0.3433]
+  npv         : 0.9502 [0.9394, 0.9607]
 
 REFERENCE METRICS AT THRESHOLD = 0.50:
 ----------------------------------------------------------------------

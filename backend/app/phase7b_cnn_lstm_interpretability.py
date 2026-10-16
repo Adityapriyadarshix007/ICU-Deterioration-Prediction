@@ -12,15 +12,16 @@ METHODS
 - Permutation importance (per input channel, over test set)
 - Attention weights (mean over test patients, per timestep)
 - Mask ablation (performance with mask channels zeroed)
-- Threshold tuning (same target: recall >= 0.80)
+- Threshold tuning (target recall >= 0.80) on OOF train predictions
 - Decision curve analysis (same threshold grid as Phase 7)
 - Calibration (reliability + Brier)
 - Confusion matrix at selected threshold
 
 INPUTS
 ------
-outputs/models/phase6b/cnn_lstm_final.pt      (single final model)
+outputs/models/phase6b/cnn_lstm_final.pt
 outputs/sequences/sequences_test.npz
+outputs/tables/phase6b_oof_train_predictions.csv   <- B1 FIX
 
 OUTPUTS
 -------
@@ -29,6 +30,7 @@ Tables:
     phase7b_attention_summary.csv
     phase7b_mask_ablation.csv
     phase7b_threshold_tuning.csv
+    phase7b_threshold_source.csv
     phase7b_dca.csv
     phase7b_calibration_results.csv
     phase7b_confusion_matrix.csv
@@ -49,7 +51,8 @@ Figures:
 FIXES APPLIED
 -------------
 - attention_summary: cast timestep to int for log formatting
-- save_report: consistent int/float formatting with attention_summary
+- save_report: consistent int/float formatting
+- B1 FIX: threshold selected on OOF train predictions (leak-free)
 """
 
 import sys
@@ -148,11 +151,12 @@ def print_header():
     print(f" Start Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("-" * 80)
     print(f" Feature window: 0-{FEATURE_WINDOW_HOURS}h")
-    print(f" Outcome: ΔSOFA ≥ {SOFA_CHANGE_THRESHOLD} at "
+    print(f" Outcome: dSOFA >= {SOFA_CHANGE_THRESHOLD} at "
           f"{PREDICTION_START_HOUR}-{PREDICTION_END_HOUR}h")
     print(f" Target recall: {TARGET_RECALL}")
     print(f" Bootstrap: {N_BOOTSTRAP} resamples, {BOOTSTRAP_CI}% CI")
     print(f" Permutation: {N_PERMUTATION_REPEATS} repeats per channel")
+    print(" Threshold: selected on OOF train (leak-free)")
     print("=" * 80)
     print()
 
@@ -275,12 +279,12 @@ def permutation_importance(model, X, y, device, logger,
     df['rank'] = df.index + 1
 
     df.to_csv(TABLE_DIR / 'phase7b_permutation_importance.csv', index=False)
-    logger.info(f"  Saved: phase7b_permutation_importance.csv")
+    logger.info("  Saved: phase7b_permutation_importance.csv")
 
     logger.info("\n  Top 15 channels by AUPRC drop:")
     for _, r in df.head(15).iterrows():
         logger.info(f"    {int(r['rank']):2d}. {r['label']:35s} "
-                    f"ΔAUPRC={r['auprc_drop_mean']:+.4f}")
+                    f"dAUPRC={r['auprc_drop_mean']:+.4f}")
 
     return df, base_auprc, base_auroc
 
@@ -343,7 +347,7 @@ def attention_summary(model, X, y, device, logger):
     df['bin_start_min'] = df['bin_start_min'].astype(int)
     df['bin_end_min'] = df['bin_end_min'].astype(int)
     df.to_csv(TABLE_DIR / 'phase7b_attention_summary.csv', index=False)
-    logger.info(f"  Saved: phase7b_attention_summary.csv")
+    logger.info("  Saved: phase7b_attention_summary.csv")
 
     logger.info("\n  Mean attention per timestep:")
     for _, r in df.iterrows():
@@ -400,7 +404,7 @@ def mask_ablation(model, X_test, y_test, device, logger):
     ]
     df = pd.DataFrame(rows)
     df.to_csv(TABLE_DIR / 'phase7b_mask_ablation.csv', index=False)
-    logger.info(f"  Saved: phase7b_mask_ablation.csv")
+    logger.info("  Saved: phase7b_mask_ablation.csv")
 
     logger.info("\n  Mask ablation results:")
     for _, r in df.iterrows():
@@ -408,9 +412,9 @@ def mask_ablation(model, X_test, y_test, device, logger):
                     f"AUPRC={r['auprc']:.4f}  AUROC={r['auroc']:.4f}  "
                     f"Recall={r['recall']:.4f}")
 
-    logger.info(f"\n  ΔAUPRC (full - masks_zeroed) = "
+    logger.info(f"\n  dAUPRC (full - masks_zeroed) = "
                 f"{metrics_full['auprc'] - metrics_no_masks['auprc']:+.4f}")
-    logger.info(f"  ΔAUROC (full - masks_zeroed) = "
+    logger.info(f"  dAUROC (full - masks_zeroed) = "
                 f"{metrics_full['auroc'] - metrics_no_masks['auroc']:+.4f}")
 
     return df
@@ -449,12 +453,109 @@ def make_mask_ablation_figure(ablation_df, logger):
 
 
 # ============================================================
-# THRESHOLD TUNING
+# B1 FIX - OOF-BASED THRESHOLD SELECTION (leak-free)
+# ============================================================
+
+def load_oof_predictions(logger):
+    path = TABLE_DIR / 'phase6b_oof_train_predictions.csv'
+    if not path.exists():
+        logger.warning(f"OOF predictions not found: {path}")
+        logger.warning("  -> Falling back to test-set threshold tuning "
+                       "(leaky; disclose in limitations)")
+        return None, None
+
+    df = pd.read_csv(path)
+    required = {'y_true', 'y_prob_oof'}
+    if not required.issubset(df.columns):
+        logger.error(f"OOF file missing required columns "
+                     f"{required - set(df.columns)}")
+        return None, None
+
+    logger.info(f"Loaded OOF predictions: {df.shape}")
+    logger.info(f"  OOF prevalence: {df['y_true'].mean():.4f}")
+    logger.info(f"  OOF AUPRC: "
+                f"{average_precision_score(df['y_true'], df['y_prob_oof']):.4f}")
+    logger.info(f"  OOF AUROC: "
+                f"{roc_auc_score(df['y_true'], df['y_prob_oof']):.4f}")
+    return df['y_true'].values, df['y_prob_oof'].values
+
+
+def tune_threshold_oof(y_oof, prob_oof, logger):
+    logger.info("\n" + "=" * 60)
+    logger.info("THRESHOLD TUNING ON OOF TRAIN PREDICTIONS (CNN-LSTM)")
+    logger.info(f"  Target recall = {TARGET_RECALL}")
+    logger.info("=" * 60)
+
+    thresholds = np.arange(0.05, 0.96, 0.01)
+    rows = []
+    for t in thresholds:
+        y_pred = (prob_oof >= t).astype(int)
+        tn, fp, fn, tp = confusion_matrix(y_oof, y_pred,
+                                           labels=[0, 1]).ravel()
+        rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        prec = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        spec = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+        npv = tn / (tn + fn) if (tn + fn) > 0 else 0.0
+        f1 = (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
+        rows.append({
+            'threshold': t, 'recall': rec, 'precision': prec,
+            'specificity': spec, 'npv': npv, 'f1': f1,
+            'tp': int(tp), 'fp': int(fp), 'fn': int(fn), 'tn': int(tn),
+        })
+
+    df = pd.DataFrame(rows)
+    above = df[df['recall'] >= TARGET_RECALL]
+    if not above.empty:
+        selected = above.loc[above['f1'].idxmax()]
+        logger.info(f"Found {len(above)} OOF thresholds achieving "
+                    f"recall >= {TARGET_RECALL}; selecting by max F1")
+    else:
+        selected = df.iloc[df['recall'].idxmax()]
+        logger.warning(f"Target recall {TARGET_RECALL} not achievable on "
+                       f"OOF; using max recall {selected['recall']:.4f}")
+
+    logger.info(f"Selected threshold (from OOF): {selected['threshold']:.3f}")
+    logger.info(f"  OOF Recall:     {selected['recall']:.4f}")
+    logger.info(f"  OOF Precision:  {selected['precision']:.4f}")
+    logger.info(f"  OOF Specificity:{selected['specificity']:.4f}")
+    logger.info(f"  OOF F1:         {selected['f1']:.4f}")
+
+    df.to_csv(TABLE_DIR / 'phase7b_threshold_tuning.csv', index=False)
+    logger.info("Saved: phase7b_threshold_tuning.csv")
+    return df, selected
+
+
+def apply_threshold_to_test(y_test, y_prob, threshold, logger):
+    logger.info(f"\nApplying OOF-selected threshold {threshold:.3f} to test set")
+    y_pred = (y_prob >= threshold).astype(int)
+    tn, fp, fn, tp = confusion_matrix(y_test, y_pred, labels=[0, 1]).ravel()
+    rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    prec = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    spec = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+    npv = tn / (tn + fn) if (tn + fn) > 0 else 0.0
+    f1 = (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
+
+    result = {
+        'threshold': float(threshold),
+        'recall': rec, 'precision': prec,
+        'specificity': spec, 'npv': npv, 'f1': f1,
+        'tp': int(tp), 'fp': int(fp), 'fn': int(fn), 'tn': int(tn),
+    }
+    logger.info(f"  Test Recall:     {rec:.4f}")
+    logger.info(f"  Test Precision:  {prec:.4f}")
+    logger.info(f"  Test Specificity:{spec:.4f}")
+    logger.info(f"  Test F1:         {f1:.4f}")
+    logger.info(f"  Test TP/FP/FN/TN: {tp}/{fp}/{fn}/{tn}")
+    return result
+
+
+# ============================================================
+# LEGACY (test-set) THRESHOLD TUNING - fallback only
 # ============================================================
 
 def tune_threshold(y_test, y_prob, logger):
     logger.info("\n" + "=" * 60)
-    logger.info(f"THRESHOLD TUNING (target recall = {TARGET_RECALL})")
+    logger.info(f"THRESHOLD TUNING (target recall = {TARGET_RECALL}) [LEGACY]")
     logger.info("=" * 60)
 
     thresholds = np.arange(0.05, 0.96, 0.01)
@@ -475,26 +576,13 @@ def tune_threshold(y_test, y_prob, logger):
         })
 
     df = pd.DataFrame(rows)
-
     above = df[df['recall'] >= TARGET_RECALL]
     if not above.empty:
         selected = above.loc[above['f1'].idxmax()]
-        logger.info(f"Found {len(above)} thresholds achieving recall ≥ "
-                    f"{TARGET_RECALL}; selecting by max F1")
     else:
         selected = df.iloc[df['recall'].idxmax()]
-        logger.warning(f"Target recall not achievable; using max recall "
-                       f"{selected['recall']:.4f}")
-
-    logger.info(f"Selected threshold: {selected['threshold']:.3f}")
-    logger.info(f"  Recall:     {selected['recall']:.4f}")
-    logger.info(f"  Precision:  {selected['precision']:.4f}")
-    logger.info(f"  Specificity:{selected['specificity']:.4f}")
-    logger.info(f"  NPV:        {selected['npv']:.4f}")
-    logger.info(f"  F1:         {selected['f1']:.4f}")
 
     df.to_csv(TABLE_DIR / 'phase7b_threshold_tuning.csv', index=False)
-    logger.info(f"Saved: phase7b_threshold_tuning.csv")
     return df, selected
 
 
@@ -512,9 +600,9 @@ def make_threshold_figure(threshold_df, selected, logger):
                alpha=0.7, label=f"Selected t={selected['threshold']:.2f}")
     ax.axhline(TARGET_RECALL, color='gray', linestyle=':', alpha=0.5,
                label=f'Target recall={TARGET_RECALL}')
-    ax.set_xlabel('Decision threshold')
+    ax.set_xlabel('Decision threshold (OOF-tuned)')
     ax.set_ylabel('Metric value')
-    ax.set_title('CNN-LSTM Threshold Tuning')
+    ax.set_title('CNN-LSTM Threshold Tuning (OOF)')
     ax.legend(loc='best')
     ax.grid(alpha=0.3)
     plt.tight_layout()
@@ -522,10 +610,6 @@ def make_threshold_figure(threshold_df, selected, logger):
     plt.close()
     logger.info("  Figure: phase7b_threshold_curve.png")
 
-
-# ============================================================
-# BOOTSTRAP CIs
-# ============================================================
 
 def bootstrap_metrics(y_test, y_prob, threshold, logger):
     logger.info(f"\nBootstrap ({N_BOOTSTRAP} resamples)...")
@@ -569,10 +653,6 @@ def bootstrap_metrics(y_test, y_prob, threshold, logger):
     return ci
 
 
-# ============================================================
-# DCA
-# ============================================================
-
 def compute_dca(y_test, y_prob, logger):
     logger.info("\n" + "=" * 60)
     logger.info("DECISION CURVE ANALYSIS")
@@ -599,7 +679,7 @@ def compute_dca(y_test, y_prob, logger):
     logger.info(f"Max net benefit: {best['net_benefit_model']:.4f} "
                 f"at threshold={best['threshold']:.2f}")
     df.to_csv(TABLE_DIR / 'phase7b_dca.csv', index=False)
-    logger.info(f"Saved: phase7b_dca.csv")
+    logger.info("Saved: phase7b_dca.csv")
     return df
 
 
@@ -624,10 +704,6 @@ def make_dca_figure(dca_df, logger):
     logger.info("  Figure: phase7b_dca.png")
 
 
-# ============================================================
-# CALIBRATION
-# ============================================================
-
 def compute_calibration(y_test, y_prob, logger):
     logger.info("\n" + "=" * 60)
     logger.info("CALIBRATION")
@@ -650,7 +726,7 @@ def compute_calibration(y_test, y_prob, logger):
         })
     df = pd.DataFrame(rows)
     df.to_csv(TABLE_DIR / 'phase7b_calibration_results.csv', index=False)
-    logger.info(f"Saved: phase7b_calibration_results.csv")
+    logger.info("Saved: phase7b_calibration_results.csv")
     brier = brier_score_loss(y_test, y_prob)
     logger.info(f"Brier score: {brier:.4f}")
     return df, brier
@@ -679,10 +755,6 @@ def make_calibration_figure(cal_df, brier, logger):
     logger.info("  Figure: phase7b_calibration.png")
 
 
-# ============================================================
-# CONFUSION MATRIX
-# ============================================================
-
 def make_confusion_matrix_figure(selected, logger):
     tn = int(selected['tn']); fp = int(selected['fp'])
     fn = int(selected['fn']); tp = int(selected['tp'])
@@ -692,7 +764,7 @@ def make_confusion_matrix_figure(selected, logger):
                 xticklabels=['Pred 0', 'Pred 1'],
                 yticklabels=['True 0', 'True 1'],
                 cbar_kws={'label': 'Count'})
-    ax.set_title(f"CNN-LSTM Confusion Matrix at threshold="
+    ax.set_title(f"CNN-LSTM Confusion Matrix at OOF threshold="
                  f"{selected['threshold']:.2f}\n"
                  f"Recall={selected['recall']:.3f}, "
                  f"Precision={selected['precision']:.3f}")
@@ -701,10 +773,6 @@ def make_confusion_matrix_figure(selected, logger):
     plt.close()
     logger.info("  Figure: phase7b_confusion_matrix.png")
 
-
-# ============================================================
-# PERMUTATION FIGURE
-# ============================================================
 
 def make_permutation_figure(perm_df, logger):
     top = perm_df.head(TOP_N_BAR).iloc[::-1]
@@ -727,18 +795,15 @@ def make_permutation_figure(perm_df, logger):
     logger.info("  Figure: phase7b_permutation_bar.png")
 
 
-# ============================================================
-# REPORT
-# ============================================================
-
 def save_report(perm_df, attn_df, ablation_df, selected, boot_ci,
-                dca_df, cal_df, brier, test_metrics_05, logger):
+                dca_df, cal_df, brier, test_metrics_05, logger,
+                threshold_source='oof_train'):
     lines = []
     lines.append("=" * 70)
     lines.append("PHASE 7b: CNN-LSTM INTERPRETABILITY REPORT")
     lines.append("=" * 70)
     lines.append(f"Feature window: 0-{FEATURE_WINDOW_HOURS}h")
-    lines.append(f"Outcome: ΔSOFA ≥ {SOFA_CHANGE_THRESHOLD} at "
+    lines.append(f"Outcome: dSOFA >= {SOFA_CHANGE_THRESHOLD} at "
                  f"{PREDICTION_START_HOUR}-{PREDICTION_END_HOUR}h")
     lines.append("")
 
@@ -769,11 +834,17 @@ def save_report(perm_df, attn_df, ablation_df, selected, boot_ci,
     lines.append("-" * 70)
     lines.append(f"  Target recall: {TARGET_RECALL}")
     lines.append(f"  Selected threshold: {selected['threshold']:.3f}")
-    lines.append(f"  Recall:     {selected['recall']:.4f}")
-    lines.append(f"  Precision:  {selected['precision']:.4f}")
-    lines.append(f"  Specificity:{selected['specificity']:.4f}")
-    lines.append(f"  NPV:        {selected['npv']:.4f}")
-    lines.append(f"  F1:         {selected['f1']:.4f}")
+    if threshold_source == 'oof_train':
+        lines.append("  Threshold source: OOF train predictions "
+                     "(5-fold, same folds as Phase 6b) - NO TEST LEAKAGE")
+    else:
+        lines.append("  Threshold source: TEST SET (fallback) - "
+                     "metrics are optimistic; disclose as limitation")
+    lines.append(f"  Test Recall:     {selected['recall']:.4f}")
+    lines.append(f"  Test Precision:  {selected['precision']:.4f}")
+    lines.append(f"  Test Specificity:{selected['specificity']:.4f}")
+    lines.append(f"  Test NPV:        {selected['npv']:.4f}")
+    lines.append(f"  Test F1:         {selected['f1']:.4f}")
 
     lines.append("")
     lines.append(f"BOOTSTRAP 95% CIs ({N_BOOTSTRAP} resamples):")
@@ -802,12 +873,8 @@ def save_report(perm_df, attn_df, ablation_df, selected, boot_ci,
 
     with open(TABLE_DIR / 'phase7b_report.txt', 'w') as f:
         f.write('\n'.join(lines))
-    logger.info(f"Saved: phase7b_report.txt")
+    logger.info("Saved: phase7b_report.txt")
 
-
-# ============================================================
-# MAIN
-# ============================================================
 
 def main():
     logger = setup_logging()
@@ -819,10 +886,9 @@ def main():
     device = get_device()
     logger.info(f"  Device: {device}")
     if device.type == 'mps' and not check_mps_bce():
-        logger.warning("MPS fallback → CPU")
+        logger.warning("MPS fallback -> CPU")
         device = torch.device('cpu')
 
-    train_data = np.load(SEQUENCE_DIR / 'sequences_train.npz')
     test_data = np.load(SEQUENCE_DIR / 'sequences_test.npz')
     X_test = test_data['X']
     y_test = test_data['y'].astype(int)
@@ -839,7 +905,7 @@ def main():
 
     pd.DataFrame([test_metrics_05]).to_csv(
         TABLE_DIR / 'phase7b_test_metrics_at_0.5.csv', index=False)
-    logger.info(f"  Saved: phase7b_test_metrics_at_0.5.csv")
+    logger.info("  Saved: phase7b_test_metrics_at_0.5.csv")
 
     logger.info("\n" + "=" * 60)
     logger.info("TEST METRICS AT THRESHOLD = 0.50")
@@ -862,9 +928,31 @@ def main():
     ablation_df = mask_ablation(model, X_test, y_test, device, logger)
     make_mask_ablation_figure(ablation_df, logger)
 
-    # 5. Threshold tuning
-    threshold_df, selected = tune_threshold(y_test, y_prob, logger)
+    # 5. Threshold tuning (B1 FIX: OOF-based)
+    y_oof, prob_oof = load_oof_predictions(logger)
+
+    if y_oof is not None:
+        threshold_df, selected_oof = tune_threshold_oof(y_oof, prob_oof, logger)
+        selected = apply_threshold_to_test(
+            y_test, y_prob, float(selected_oof['threshold']), logger
+        )
+        threshold_source = 'oof_train'
+    else:
+        logger.warning("FALLBACK: threshold tuned on test set (leaky)")
+        threshold_df, selected = tune_threshold(y_test, y_prob, logger)
+        threshold_source = 'test_fallback'
+
     make_threshold_figure(threshold_df, selected, logger)
+
+    pd.DataFrame([{
+        'source': threshold_source,
+        'threshold': float(selected['threshold']),
+        'test_recall': float(selected['recall']),
+        'test_precision': float(selected['precision']),
+        'test_specificity': float(selected['specificity']),
+        'test_f1': float(selected['f1']),
+    }]).to_csv(TABLE_DIR / 'phase7b_threshold_source.csv', index=False)
+    logger.info(f"Saved: phase7b_threshold_source.csv (source={threshold_source})")
 
     pd.DataFrame([{
         'threshold': float(selected['threshold']),
@@ -908,9 +996,9 @@ def main():
 
     # 10. Report
     save_report(perm_df, attn_df, ablation_df, selected, boot_ci,
-                dca_df, cal_df, brier, test_metrics_05, logger)
+                dca_df, cal_df, brier, test_metrics_05, logger,
+                threshold_source=threshold_source)
 
-    # Summary
     elapsed = time.time() - t0
     print("\n" + "=" * 80)
     print(" PHASE 7b COMPLETED")
@@ -922,7 +1010,7 @@ def main():
         print(f"   {int(row['rank'])}. {row['label']:35s} "
               f"{row['auprc_drop_mean']:+.4f}")
     print("-" * 80)
-    print(" SELECTED THRESHOLD:")
+    print(f" SELECTED THRESHOLD (source={threshold_source}):")
     print(f"   threshold:  {selected['threshold']:.3f}")
     print(f"   Recall:     {selected['recall']:.4f} "
           f"[{boot_ci['recall']['ci_lo']:.4f}, "

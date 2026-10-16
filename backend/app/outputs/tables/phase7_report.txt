@@ -1,0 +1,84 @@
+======================================================================
+PHASE 7: INTERPRETABILITY AND CLINICAL UTILITY REPORT
+======================================================================
+Feature window: 0-6h
+Outcome: dSOFA >= 2 at 6-18h
+
+TOP 15 FEATURES BY MEAN |SHAP|:
+----------------------------------------------------------------------
+   1. fio2_max                                 0.1737
+   2. gcs_total_delta                          0.1723
+   3. gcs_total_min_missing                    0.1557
+   4. gcs_total_min                            0.1344
+   5. pao2_min                                 0.1169
+   6. respiratory_rate_mean                    0.1155
+   7. glucose_worst_missing                    0.1028
+   8. bun_worst                                0.0983
+   9. platelets_worst_missing                  0.0971
+  10. bun_worst_missing                        0.0915
+  11. creatinine_last                          0.0778
+  12. admission_SURGICAL SAME DAY ADMISSION    0.0724
+  13. heart_rate_mean                          0.0721
+  14. lactate_last                             0.0619
+  15. bicarbonate_worst_missing                0.0544
+
+TOP 10 MASKS BY MEAN |SHAP|:
+----------------------------------------------------------------------
+   1. gcs_total_min_missing                    0.1557
+   2. glucose_worst_missing                    0.1028
+   3. platelets_worst_missing                  0.0971
+   4. bun_worst_missing                        0.0915
+   5. bicarbonate_worst_missing                0.0544
+   6. bilirubin_worst_missing                  0.0284
+   7. heart_rate_slope_missing                 0.0266
+   8. pao2_min_missing                         0.0209
+   9. temperature_mean_missing                 0.0202
+  10. gcs_eyes_slope_missing                   0.0164
+
+THRESHOLD TUNING:
+----------------------------------------------------------------------
+  Target recall: 0.8
+  Selection: max F1 subject to recall >= target
+  Selected threshold: 0.380
+  Threshold source: OOF train predictions (5-fold, same folds as Phase 6) - NO TEST LEAKAGE
+  Test Recall:     0.8315
+  Test Precision:  0.3152
+  Test Specificity:0.5788
+  Test NPV:        0.9364
+  Test F1:         0.4572
+  Test TP/FP/FN/TN: 923/2005/187/2755
+
+BOOTSTRAP 95% CIs (1000 resamples, at selected threshold):
+----------------------------------------------------------------------
+  recall      : 0.8315 [0.8097, 0.8524]
+  precision   : 0.3153 [0.2983, 0.3314]
+  f1          : 0.4571 [0.4382, 0.4754]
+  auroc       : 0.8001 [0.7857, 0.8140]
+  auprc       : 0.5706 [0.5422, 0.5965]
+  specificity : 0.5791 [0.5655, 0.5923]
+  npv         : 0.9365 [0.9274, 0.9449]
+
+REFERENCE METRICS AT THRESHOLD = 0.50:
+----------------------------------------------------------------------
+  recall      : 0.6739
+  auroc       : 0.8000
+  auprc       : 0.5701
+  precision   : 0.3900
+  f1          : 0.4941
+  accuracy    : 0.7390
+  brier       : 0.1701
+
+DECISION CURVE ANALYSIS:
+----------------------------------------------------------------------
+  Max net benefit: 0.1484 at threshold=0.05
+
+CALIBRATION:
+----------------------------------------------------------------------
+  Brier score: 0.1701
+
+NOTE:
+----------------------------------------------------------------------
+  All analyses on held-out test set.
+  SHAP computed on full test set.
+  Imputation fit on train only (no leakage).
+  Threshold selected on OOF train predictions (no leakage).

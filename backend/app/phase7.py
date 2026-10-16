@@ -9,11 +9,12 @@ clinical utility at a tuned decision threshold.
 
 OUTPUTS
 -------
-Tables (11):
-  phase7_shap_values.csv             - full SHAP matrix (n × 158)
+Tables (12):
+  phase7_shap_values.csv             - full SHAP matrix
   phase7_feature_importance.csv      - mean |SHAP| per feature
-  phase7_mask_importance.csv         - mean |SHAP| per mask (40)
-  phase7_threshold_tuning.csv        - metrics at each threshold
+  phase7_mask_importance.csv         - mean |SHAP| per mask
+  phase7_threshold_tuning.csv        - metrics at each threshold (OOF)
+  phase7_threshold_source.csv        - records whether OOF or test was used
   phase7_dca.csv                     - net benefit across thresholds
   phase7_calibration_results.csv     - calibration bins
   phase7_confusion_matrix.csv        - TP/FP/FN/TN at selected threshold
@@ -39,17 +40,20 @@ outputs/models/phase6_final_model.pkl
 outputs/models/phase6_final_config.pkl
 outputs/tables/X_train.csv
 outputs/tables/X_test.csv
+outputs/tables/phase6_oof_train_predictions.csv   <- B1 FIX (leak-free threshold)
 
 NO DATA LEAKAGE
 ---------------
 All SHAP and threshold analyses are on the held-out test set.
 Imputation is fit on train (replicating Phase 6).
+Threshold is selected on OOF train predictions (NOT the test set).
 
-FIXES APPLIED
--------------
-1. make_confusion_matrix_figure: cast tn/fp/fn/tp to int (fixes fmt='d' crash)
+PATCHES APPLIED
+---------------
+1. make_confusion_matrix_figure: cast tn/fp/fn/tp to int
 2. tune_threshold: select threshold by max F1 subject to recall >= target
-   (fixes degenerate selection at 0.05)
+3. B1 FIX: threshold selected on OOF train predictions, then frozen and
+   applied to test set (removes threshold-selection leakage).
 """
 
 import sys
@@ -98,23 +102,12 @@ METADATA_COLS = {'stay_id', 'hadm_id', 'subject_id', 'intime'}
 TARGET_COL = 'outcome'
 MASK_SUFFIX = '_missing'
 
-# Clinical operating point
 TARGET_RECALL = 0.80
-
-# Bootstrap
 N_BOOTSTRAP = 1000
 BOOTSTRAP_CI = 95
-
-# DCA thresholds
 DCA_THRESHOLDS = np.arange(0.05, 0.51, 0.01)
-
-# Calibration bins
 N_CALIBRATION_BINS = 10
-
-# Number of dependence plots
 N_DEPENDENCE = 4
-
-# Top-N features to show in bar plot
 TOP_N_BAR = 20
 
 
@@ -143,12 +136,13 @@ def print_header():
     print(f" Start Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("-" * 80)
     print(f" Feature window: 0-{FEATURE_WINDOW_HOURS}h")
-    print(f" Outcome: ΔSOFA ≥ {SOFA_CHANGE_THRESHOLD} at "
+    print(f" Outcome: dSOFA >= {SOFA_CHANGE_THRESHOLD} at "
           f"{PREDICTION_START_HOUR}-{PREDICTION_END_HOUR}h")
     print(f" Target recall: {TARGET_RECALL}")
     print(f" Bootstrap: {N_BOOTSTRAP} resamples, {BOOTSTRAP_CI}% CI")
     print(f" DCA thresholds: {DCA_THRESHOLDS[0]:.2f} to "
           f"{DCA_THRESHOLDS[-1]:.2f} ({len(DCA_THRESHOLDS)} points)")
+    print(" Threshold: selected on OOF train (leak-free)")
     print("=" * 80)
     print()
 
@@ -158,9 +152,6 @@ def print_header():
 # ============================================================
 
 def load_and_reconstruct(config: Dict, logger):
-    """
-    Rebuild X_train and X_test with imputation + masks, matching Phase 6.
-    """
     logger.info("\n" + "=" * 60)
     logger.info("RECONSTRUCTING DATA (replicating Phase 6 refit)")
     logger.info("=" * 60)
@@ -173,7 +164,6 @@ def load_and_reconstruct(config: Dict, logger):
     stay_ids_test = test_df['stay_id'].values if 'stay_id' in test_df.columns \
         else np.arange(len(test_df))
 
-    # Drop metadata + target + pre-existing masks
     exclude = METADATA_COLS | {TARGET_COL}
     mask_cols_train = [c for c in train_df.columns if c.endswith(MASK_SUFFIX)]
 
@@ -186,7 +176,6 @@ def load_and_reconstruct(config: Dict, logger):
     logger.info(f"Train raw shape: {X_train_raw.shape}")
     logger.info(f"Test raw shape:  {X_test_raw.shape}")
 
-        # Replicate Phase 6's imputation exactly (config-driven)
     imputation = config['imputation']
 
     if imputation == 'zero':
@@ -202,7 +191,6 @@ def load_and_reconstruct(config: Dict, logger):
         raise ValueError(f"Unsupported imputation: {imputation}")
     logger.info(f"Imputation: {imputation}")
 
-    # Add masks
     mask_variant = config['mask_variant']
     if mask_variant == 'with_masks':
         kept_mask_cols = config['kept_mask_cols']
@@ -228,7 +216,6 @@ def load_and_reconstruct(config: Dict, logger):
 # ============================================================
 
 def compute_shap(model, X_test: pd.DataFrame, logger):
-    """Compute SHAP values on the full test set."""
     logger.info("\n" + "=" * 60)
     logger.info("COMPUTING SHAP VALUES")
     logger.info("=" * 60)
@@ -238,17 +225,13 @@ def compute_shap(model, X_test: pd.DataFrame, logger):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(X_test)
 
-    # LightGBM binary classifier returns list [neg_class, pos_class]
-    # or a 2D array depending on shap version
     if isinstance(shap_values, list):
         shap_values = shap_values[1]
     if shap_values.ndim == 3:
-        # (n, features, classes) → take positive class
         shap_values = shap_values[:, :, 1]
 
     logger.info(f"SHAP values shape: {shap_values.shape}")
 
-    # Also compute expected value (base rate)
     expected_value = explainer.expected_value
     if isinstance(expected_value, (list, np.ndarray)):
         expected_value = float(expected_value[1]
@@ -260,13 +243,10 @@ def compute_shap(model, X_test: pd.DataFrame, logger):
 
 
 def save_shap_outputs(model, X_test, shap_values, expected_value, logger):
-    """Save SHAP matrices and importance rankings."""
-    # Full SHAP matrix
     shap_df = pd.DataFrame(shap_values, columns=X_test.columns)
     shap_df.to_csv(TABLE_DIR / 'phase7_shap_values.csv', index=False)
-    logger.info(f"Saved: phase7_shap_values.csv")
+    logger.info("Saved: phase7_shap_values.csv")
 
-    # Mean |SHAP| per feature
     importance = pd.DataFrame({
         'feature': X_test.columns,
         'mean_abs_shap': np.abs(shap_values).mean(axis=0),
@@ -276,9 +256,8 @@ def save_shap_outputs(model, X_test, shap_values, expected_value, logger):
     importance['rank'] = importance.index + 1
 
     importance.to_csv(TABLE_DIR / 'phase7_feature_importance.csv', index=False)
-    logger.info(f"Saved: phase7_feature_importance.csv")
+    logger.info("Saved: phase7_feature_importance.csv")
 
-    # Mask-only importance
     mask_rows = importance[importance['feature'].str.endswith(MASK_SUFFIX)]
     mask_rows = mask_rows.sort_values('mean_abs_shap',
                                        ascending=False).reset_index(drop=True)
@@ -302,17 +281,14 @@ def save_shap_outputs(model, X_test, shap_values, expected_value, logger):
 
 def make_shap_figures(model, X_test, shap_values, importance,
                       mask_importance, logger):
-    """Generate all SHAP figures."""
     FIG_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 1. Beeswarm (SHAP creates its own figure — do not pre-create)
     shap.summary_plot(shap_values, X_test, show=False, max_display=20)
     plt.savefig(FIG_DIR / 'phase7_shap_summary.png', dpi=150,
                 bbox_inches='tight')
     plt.close()
     logger.info("  Figure: phase7_shap_summary.png")
 
-    # 2. Bar (top 20) — custom matplotlib, no shap.summary_plot
     top20 = importance.head(TOP_N_BAR)
     fig, ax = plt.subplots(figsize=(9, 8))
     ax.barh(range(len(top20)), top20['mean_abs_shap'].values[::-1],
@@ -326,7 +302,6 @@ def make_shap_figures(model, X_test, shap_values, importance,
     plt.close()
     logger.info("  Figure: phase7_shap_bar.png")
 
-    # 3. Dependence plots for top-4
     top_features = importance.head(N_DEPENDENCE)['feature'].tolist()
     for i, feat in enumerate(top_features, 1):
         fig, ax = plt.subplots(figsize=(8, 5))
@@ -342,7 +317,6 @@ def make_shap_figures(model, X_test, shap_values, importance,
         plt.close()
         logger.info(f"  Figure: phase7_shap_dependence_{i}.png ({feat})")
 
-    # 4. Mask-specific bar
     if not mask_importance.empty:
         n_show = min(20, len(mask_importance))
         top_masks = mask_importance.head(n_show)
@@ -358,28 +332,23 @@ def make_shap_figures(model, X_test, shap_values, importance,
         plt.close()
         logger.info("  Figure: phase7_shap_masks.png")
 
-    # NOTE: waterfall is generated separately in make_waterfall()
-
 
 def make_waterfall(model, X_test, y_test, shap_values, expected_value,
                    logger):
-    """Waterfall plot for the highest-confidence true positive."""
     y_prob = model.predict_proba(X_test)[:, 1]
 
-    # Find highest-probability true positive
     tp_mask = (y_test == 1)
     if not tp_mask.any():
-        logger.warning("No true positives — skipping waterfall")
+        logger.warning("No true positives - skipping waterfall")
         return
 
     tp_probs = y_prob.copy()
-    tp_probs[~tp_mask] = -1  # exclude non-TPs
+    tp_probs[~tp_mask] = -1
     idx = int(np.argmax(tp_probs))
 
     logger.info(f"\nWaterfall: patient idx={idx}, "
                 f"predicted prob={y_prob[idx]:.3f}, true=1")
 
-    # shap.Explanation object for waterfall
     explanation = shap.Explanation(
         values=shap_values[idx],
         base_values=expected_value,
@@ -397,13 +366,125 @@ def make_waterfall(model, X_test, y_test, shap_values, expected_value,
 
 
 # ============================================================
-# THRESHOLD TUNING  (PATCH 2: select by max F1 subject to recall >= target)
+# B1 FIX - OOF-BASED THRESHOLD SELECTION (leak-free)
+# ============================================================
+#
+# Problem: tuning the threshold on the test set, then reporting
+# test metrics at that threshold, makes recall/precision/F1 optimistic.
+#
+# Fix: select the threshold on out-of-fold (OOF) train predictions
+# produced by Phase 6's 5-fold CV (same folds), then apply the
+# frozen threshold to the test set.
+
+def load_oof_predictions(logger):
+    """
+    Load OOF train predictions from Phase 6.
+    Returns (y_oof, prob_oof) or (None, None) if unavailable.
+    """
+    path = TABLE_DIR / 'phase6_oof_train_predictions.csv'
+    if not path.exists():
+        logger.warning(f"OOF predictions not found: {path}")
+        logger.warning("  -> Falling back to test-set threshold tuning "
+                       "(leaky; disclose in limitations)")
+        return None, None
+
+    df = pd.read_csv(path)
+    required = {'y_true', 'y_prob_oof'}
+    if not required.issubset(df.columns):
+        logger.error(f"OOF file missing required columns "
+                     f"{required - set(df.columns)}")
+        return None, None
+
+    logger.info(f"Loaded OOF predictions: {df.shape}")
+    logger.info(f"  OOF prevalence: {df['y_true'].mean():.4f}")
+    logger.info(f"  OOF AUPRC: "
+                f"{average_precision_score(df['y_true'], df['y_prob_oof']):.4f}")
+    logger.info(f"  OOF AUROC: "
+                f"{roc_auc_score(df['y_true'], df['y_prob_oof']):.4f}")
+    return df['y_true'].values, df['y_prob_oof'].values
+
+
+def tune_threshold_oof(y_oof, prob_oof, logger):
+    """
+    Select threshold on OOF train predictions (no test leakage).
+    Same rule as before: max F1 subject to recall >= TARGET_RECALL.
+    """
+    logger.info("\n" + "=" * 60)
+    logger.info("THRESHOLD TUNING ON OOF TRAIN PREDICTIONS")
+    logger.info(f"  Target recall = {TARGET_RECALL}")
+    logger.info("=" * 60)
+
+    thresholds = np.arange(0.05, 0.96, 0.01)
+    rows = []
+    for t in thresholds:
+        y_pred = (prob_oof >= t).astype(int)
+        tn, fp, fn, tp = confusion_matrix(y_oof, y_pred,
+                                           labels=[0, 1]).ravel()
+        rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        prec = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        spec = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+        npv = tn / (tn + fn) if (tn + fn) > 0 else 0.0
+        f1 = (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
+        rows.append({
+            'threshold': t, 'recall': rec, 'precision': prec,
+            'specificity': spec, 'npv': npv, 'f1': f1,
+            'tp': int(tp), 'fp': int(fp), 'fn': int(fn), 'tn': int(tn),
+        })
+
+    df = pd.DataFrame(rows)
+    above = df[df['recall'] >= TARGET_RECALL]
+    if not above.empty:
+        selected = above.loc[above['f1'].idxmax()]
+        logger.info(f"Found {len(above)} OOF thresholds achieving "
+                    f"recall >= {TARGET_RECALL}; selecting by max F1")
+    else:
+        selected = df.iloc[df['recall'].idxmax()]
+        logger.warning(f"Target recall {TARGET_RECALL} not achievable on "
+                       f"OOF; using max recall {selected['recall']:.4f}")
+
+    logger.info(f"Selected threshold (from OOF): {selected['threshold']:.3f}")
+    logger.info(f"  OOF Recall:     {selected['recall']:.4f}")
+    logger.info(f"  OOF Precision:  {selected['precision']:.4f}")
+    logger.info(f"  OOF Specificity:{selected['specificity']:.4f}")
+    logger.info(f"  OOF F1:         {selected['f1']:.4f}")
+
+    df.to_csv(TABLE_DIR / 'phase7_threshold_tuning.csv', index=False)
+    logger.info("Saved: phase7_threshold_tuning.csv")
+    return df, selected
+
+
+def apply_threshold_to_test(y_test, y_prob, threshold, logger):
+    """Apply a fixed threshold (from OOF) to the test set."""
+    logger.info(f"\nApplying OOF-selected threshold {threshold:.3f} to test set")
+    y_pred = (y_prob >= threshold).astype(int)
+    tn, fp, fn, tp = confusion_matrix(y_test, y_pred, labels=[0, 1]).ravel()
+    rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    prec = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    spec = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+    npv = tn / (tn + fn) if (tn + fn) > 0 else 0.0
+    f1 = (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
+
+    result = {
+        'threshold': float(threshold),
+        'recall': rec, 'precision': prec,
+        'specificity': spec, 'npv': npv, 'f1': f1,
+        'tp': int(tp), 'fp': int(fp), 'fn': int(fn), 'tn': int(tn),
+    }
+    logger.info(f"  Test Recall:     {rec:.4f}")
+    logger.info(f"  Test Precision:  {prec:.4f}")
+    logger.info(f"  Test Specificity:{spec:.4f}")
+    logger.info(f"  Test F1:         {f1:.4f}")
+    logger.info(f"  Test TP/FP/FN/TN: {tp}/{fp}/{fn}/{tn}")
+    return result
+
+
+# ============================================================
+# LEGACY (test-set) THRESHOLD TUNING - kept as fallback only
 # ============================================================
 
 def tune_threshold(y_test, y_prob, logger):
-    """Find threshold achieving target recall; compute metrics."""
     logger.info("\n" + "=" * 60)
-    logger.info(f"THRESHOLD TUNING (target recall = {TARGET_RECALL})")
+    logger.info(f"THRESHOLD TUNING (target recall = {TARGET_RECALL}) [LEGACY]")
     logger.info("=" * 60)
 
     thresholds = np.arange(0.05, 0.96, 0.01)
@@ -418,48 +499,29 @@ def tune_threshold(y_test, y_prob, logger):
         npv = tn / (tn + fn) if (tn + fn) > 0 else 0.0
         f1 = (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
         rows.append({
-            'threshold': t,
-            'recall': rec,
-            'precision': prec,
-            'specificity': spec,
-            'npv': npv,
-            'f1': f1,
-            'tp': int(tp), 'fp': int(fp),
-            'fn': int(fn), 'tn': int(tn),
+            'threshold': t, 'recall': rec, 'precision': prec,
+            'specificity': spec, 'npv': npv, 'f1': f1,
+            'tp': int(tp), 'fp': int(fp), 'fn': int(fn), 'tn': int(tn),
         })
 
     df = pd.DataFrame(rows)
-
-    # PATCH 2: among thresholds achieving target recall, pick max F1.
-    # This avoids degenerate operating points (e.g., threshold=0.05 where
-    # everything is predicted positive and recall is trivially 1.0).
     above = df[df['recall'] >= TARGET_RECALL]
     if not above.empty:
         selected = above.loc[above['f1'].idxmax()]
-        logger.info(f"Found {len(above)} thresholds achieving "
-                    f"recall ≥ {TARGET_RECALL}; selecting by max F1")
     else:
         selected = df.iloc[df['recall'].idxmax()]
-        logger.warning(f"Target recall {TARGET_RECALL} not achievable; "
-                       f"using max recall {selected['recall']:.4f}")
 
     logger.info(f"Selected threshold: {selected['threshold']:.3f}")
     logger.info(f"  Recall:     {selected['recall']:.4f}")
     logger.info(f"  Precision:  {selected['precision']:.4f}")
     logger.info(f"  Specificity:{selected['specificity']:.4f}")
-    logger.info(f"  NPV:        {selected['npv']:.4f}")
     logger.info(f"  F1:         {selected['f1']:.4f}")
-    logger.info(f"  TP/FP/FN/TN: {selected['tp']}/{selected['fp']}/"
-                f"{selected['fn']}/{selected['tn']}")
 
     df.to_csv(TABLE_DIR / 'phase7_threshold_tuning.csv', index=False)
-    logger.info(f"Saved: phase7_threshold_tuning.csv")
-
     return df, selected
 
 
 def bootstrap_metrics(y_test, y_prob, threshold, logger):
-    """Bootstrap 95% CIs for recall, precision, F1, AUROC, AUPRC."""
     logger.info(f"\nBootstrap ({N_BOOTSTRAP} resamples)...")
 
     rng = np.random.RandomState(RANDOM_STATE)
@@ -510,12 +572,7 @@ def bootstrap_metrics(y_test, y_prob, threshold, logger):
     return ci
 
 
-# ============================================================
-# DECISION CURVE ANALYSIS
-# ============================================================
-
 def compute_dca(y_test, y_prob, logger):
-    """Net benefit across thresholds."""
     logger.info("\n" + "=" * 60)
     logger.info("DECISION CURVE ANALYSIS")
     logger.info("=" * 60)
@@ -528,13 +585,11 @@ def compute_dca(y_test, y_prob, logger):
         y_pred = (y_prob >= t).astype(int)
         tp = int(((y_pred == 1) & (y_test == 1)).sum())
         fp = int(((y_pred == 1) & (y_test == 0)).sum())
-        # Net benefit = (TP / n) - (FP / n) * (t / (1 - t))
         if t < 1.0:
             nb = tp / n - fp / n * (t / (1 - t))
         else:
             nb = 0.0
 
-        # Treat-all: everyone predicted positive
         tp_all = int((y_test == 1).sum())
         fp_all = int((y_test == 0).sum())
         nb_all = tp_all / n - fp_all / n * (t / (1 - t))
@@ -548,24 +603,18 @@ def compute_dca(y_test, y_prob, logger):
 
     df = pd.DataFrame(rows)
 
-    # Find best threshold by net benefit
     best_idx = df['net_benefit_model'].idxmax()
     best = df.loc[best_idx]
     logger.info(f"Max net benefit: {best['net_benefit_model']:.4f} "
                 f"at threshold={best['threshold']:.2f}")
 
     df.to_csv(TABLE_DIR / 'phase7_dca.csv', index=False)
-    logger.info(f"Saved: phase7_dca.csv")
+    logger.info("Saved: phase7_dca.csv")
 
     return df
 
 
-# ============================================================
-# CALIBRATION
-# ============================================================
-
 def compute_calibration(y_test, y_prob, logger):
-    """Reliability curve."""
     logger.info("\n" + "=" * 60)
     logger.info("CALIBRATION")
     logger.info("=" * 60)
@@ -589,7 +638,7 @@ def compute_calibration(y_test, y_prob, logger):
 
     df = pd.DataFrame(rows)
     df.to_csv(TABLE_DIR / 'phase7_calibration_results.csv', index=False)
-    logger.info(f"Saved: phase7_calibration_results.csv")
+    logger.info("Saved: phase7_calibration_results.csv")
 
     brier = brier_score_loss(y_test, y_prob)
     logger.info(f"Brier score: {brier:.4f}")
@@ -598,7 +647,7 @@ def compute_calibration(y_test, y_prob, logger):
 
 
 # ============================================================
-# FIGURES — THRESHOLD / DCA / CALIBRATION / CM
+# FIGURES - THRESHOLD / DCA / CALIBRATION / CM
 # ============================================================
 
 def make_threshold_figure(threshold_df, selected, y_test, y_prob, logger):
@@ -617,9 +666,9 @@ def make_threshold_figure(threshold_df, selected, y_test, y_prob, logger):
     ax.axhline(TARGET_RECALL, color='gray', linestyle=':',
                alpha=0.5, label=f'Target recall={TARGET_RECALL}')
 
-    ax.set_xlabel('Decision threshold')
+    ax.set_xlabel('Decision threshold (OOF-tuned)')
     ax.set_ylabel('Metric value')
-    ax.set_title('Threshold Tuning: Metrics vs. Decision Threshold')
+    ax.set_title('Threshold Tuning (OOF): Metrics vs. Decision Threshold')
     ax.legend(loc='best')
     ax.grid(alpha=0.3)
     plt.tight_layout()
@@ -655,7 +704,6 @@ def make_calibration_figure(cal_df, brier, logger):
     ax.plot(cal_df['mean_predicted'], cal_df['observed_rate'],
             marker='o', linewidth=2, color='steelblue', label='Model')
 
-    # Annotate bin counts
     for _, row in cal_df.iterrows():
         ax.annotate(f"n={int(row['n'])}",
                     (row['mean_predicted'], row['observed_rate']),
@@ -676,7 +724,6 @@ def make_calibration_figure(cal_df, brier, logger):
 
 
 def make_confusion_matrix_figure(selected, logger):
-    # PATCH 1: cast to int (fixes fmt='d' crash on float input)
     tn = int(selected['tn'])
     fp = int(selected['fp'])
     fn = int(selected['fn'])
@@ -688,7 +735,7 @@ def make_confusion_matrix_figure(selected, logger):
                 xticklabels=['Pred 0', 'Pred 1'],
                 yticklabels=['True 0', 'True 1'],
                 cbar_kws={'label': 'Count'})
-    ax.set_title(f"Confusion Matrix at threshold="
+    ax.set_title(f"Confusion Matrix at OOF threshold="
                  f"{selected['threshold']:.2f}\n"
                  f"Recall={selected['recall']:.3f}, "
                  f"Precision={selected['precision']:.3f}")
@@ -704,13 +751,13 @@ def make_confusion_matrix_figure(selected, logger):
 
 def save_report(importance, mask_importance, threshold_df, selected,
                 boot_ci, dca_df, cal_df, brier, test_metrics_05,
-                logger):
+                logger, threshold_source='oof_train'):
     lines = []
     lines.append("=" * 70)
     lines.append("PHASE 7: INTERPRETABILITY AND CLINICAL UTILITY REPORT")
     lines.append("=" * 70)
     lines.append(f"Feature window: 0-{FEATURE_WINDOW_HOURS}h")
-    lines.append(f"Outcome: ΔSOFA ≥ {SOFA_CHANGE_THRESHOLD} at "
+    lines.append(f"Outcome: dSOFA >= {SOFA_CHANGE_THRESHOLD} at "
                  f"{PREDICTION_START_HOUR}-{PREDICTION_END_HOUR}h")
     lines.append("")
 
@@ -732,15 +779,22 @@ def save_report(importance, mask_importance, threshold_df, selected,
     lines.append("THRESHOLD TUNING:")
     lines.append("-" * 70)
     lines.append(f"  Target recall: {TARGET_RECALL}")
-    lines.append(f"  Selection: max F1 subject to recall >= target")
+    lines.append("  Selection: max F1 subject to recall >= target")
     lines.append(f"  Selected threshold: {selected['threshold']:.3f}")
-    lines.append(f"  Recall:     {selected['recall']:.4f}")
-    lines.append(f"  Precision:  {selected['precision']:.4f}")
-    lines.append(f"  Specificity:{selected['specificity']:.4f}")
-    lines.append(f"  NPV:        {selected['npv']:.4f}")
-    lines.append(f"  F1:         {selected['f1']:.4f}")
-    lines.append(f"  TP/FP/FN/TN: {int(selected['tp'])}/{int(selected['fp'])}/"
-                 f"{int(selected['fn'])}/{int(selected['tn'])}")
+    if threshold_source == 'oof_train':
+        lines.append("  Threshold source: OOF train predictions "
+                     "(5-fold, same folds as Phase 6) - NO TEST LEAKAGE")
+    else:
+        lines.append("  Threshold source: TEST SET (fallback) - "
+                     "metrics are optimistic; disclose as limitation")
+    lines.append(f"  Test Recall:     {selected['recall']:.4f}")
+    lines.append(f"  Test Precision:  {selected['precision']:.4f}")
+    lines.append(f"  Test Specificity:{selected['specificity']:.4f}")
+    lines.append(f"  Test NPV:        {selected['npv']:.4f}")
+    lines.append(f"  Test F1:         {selected['f1']:.4f}")
+    lines.append(f"  Test TP/FP/FN/TN: {int(selected['tp'])}/"
+                 f"{int(selected['fp'])}/{int(selected['fn'])}/"
+                 f"{int(selected['tn'])}")
     lines.append("")
 
     lines.append(f"BOOTSTRAP 95% CIs ({N_BOOTSTRAP} resamples, "
@@ -762,8 +816,6 @@ def save_report(importance, mask_importance, threshold_df, selected,
     best_nb = dca_df.loc[dca_df['net_benefit_model'].idxmax()]
     lines.append(f"  Max net benefit: {best_nb['net_benefit_model']:.4f} "
                  f"at threshold={best_nb['threshold']:.2f}")
-    lines.append(f"  Model exceeds treat-all for thresholds "
-                 f"where net_benefit_model > net_benefit_treat_all")
     lines.append("")
 
     lines.append("CALIBRATION:")
@@ -773,13 +825,14 @@ def save_report(importance, mask_importance, threshold_df, selected,
 
     lines.append("NOTE:")
     lines.append("-" * 70)
-    lines.append("  All analyses on held-out test set (n=8,176).")
+    lines.append("  All analyses on held-out test set.")
     lines.append("  SHAP computed on full test set.")
     lines.append("  Imputation fit on train only (no leakage).")
+    lines.append("  Threshold selected on OOF train predictions (no leakage).")
 
     with open(TABLE_DIR / 'phase7_report.txt', 'w') as f:
         f.write('\n'.join(lines))
-    logger.info(f"Saved: phase7_report.txt")
+    logger.info("Saved: phase7_report.txt")
 
 
 # ============================================================
@@ -792,12 +845,11 @@ def main():
 
     t0 = datetime.now()
 
-    # Load Phase 6 artifacts
     model_path = MODEL_DIR / 'phase6_final_model.pkl'
     config_path = MODEL_DIR / 'phase6_final_config.pkl'
 
     if not model_path.exists() or not config_path.exists():
-        logger.error(f"Missing Phase 6 artifacts. Run Phase 6 refit first.")
+        logger.error("Missing Phase 6 artifacts. Run Phase 6 refit first.")
         return 1
 
     logger.info(f"Loading model: {model_path}")
@@ -805,11 +857,9 @@ def main():
     config = joblib.load(config_path)
     logger.info(f"Loaded config: {config}")
 
-    # Reconstruct test set
     X_train, X_test, y_train, y_test, stay_ids_test = \
         load_and_reconstruct(config, logger)
 
-    # Sanity: feature columns must match
     expected_cols = config['feature_cols'] + config.get('kept_mask_cols', [])
     if config['mask_variant'] == 'without_masks':
         expected_cols = config['feature_cols']
@@ -822,12 +872,9 @@ def main():
     if extra:
         logger.warning(f"Extra columns in X_test: {list(extra)[:10]}")
 
-    # Order columns to match training
     X_test = X_test[expected_cols]
 
-    # ========================================================
     # 1. Predictions
-    # ========================================================
     y_prob = model.predict_proba(X_test)[:, 1]
     y_pred_05 = (y_prob >= 0.5).astype(int)
 
@@ -842,7 +889,6 @@ def main():
         'brier': float(brier_score_loss(y_test, y_prob)),
     }
 
-    # Save baseline test metrics as CSV
     pd.DataFrame([test_metrics_05]).to_csv(
         TABLE_DIR / 'phase7_test_metrics_at_0.5.csv', index=False)
     logger.info("Saved: phase7_test_metrics_at_0.5.csv")
@@ -853,22 +899,39 @@ def main():
     for k, v in test_metrics_05.items():
         logger.info(f"  {k:12s}: {v:.4f}")
 
-    # ========================================================
     # 2. SHAP
-    # ========================================================
     shap_values, expected_value = compute_shap(model, X_test, logger)
     importance, mask_importance = save_shap_outputs(
         model, X_test, shap_values, expected_value, logger)
     make_shap_figures(model, X_test, shap_values, importance,
                       mask_importance, logger)
 
-    # ========================================================
-    # 3. Threshold tuning
-    # ========================================================
-    threshold_df, selected = tune_threshold(y_test, y_prob, logger)
+    # 3. Threshold tuning (B1 FIX: OOF-based)
+    y_oof, prob_oof = load_oof_predictions(logger)
+
+    if y_oof is not None:
+        threshold_df, selected_oof = tune_threshold_oof(y_oof, prob_oof, logger)
+        selected = apply_threshold_to_test(
+            y_test, y_prob, float(selected_oof['threshold']), logger
+        )
+        threshold_source = 'oof_train'
+    else:
+        logger.warning("FALLBACK: threshold tuned on test set (leaky)")
+        threshold_df, selected = tune_threshold(y_test, y_prob, logger)
+        threshold_source = 'test_fallback'
+
     make_threshold_figure(threshold_df, selected, y_test, y_prob, logger)
 
-    # Save confusion matrix CSV
+    pd.DataFrame([{
+        'source': threshold_source,
+        'threshold': float(selected['threshold']),
+        'test_recall': float(selected['recall']),
+        'test_precision': float(selected['precision']),
+        'test_specificity': float(selected['specificity']),
+        'test_f1': float(selected['f1']),
+    }]).to_csv(TABLE_DIR / 'phase7_threshold_source.csv', index=False)
+    logger.info(f"Saved: phase7_threshold_source.csv (source={threshold_source})")
+
     pd.DataFrame([{
         'threshold': float(selected['threshold']),
         'tp': int(selected['tp']),
@@ -884,10 +947,8 @@ def main():
     logger.info("Saved: phase7_confusion_matrix.csv")
     make_confusion_matrix_figure(selected, logger)
 
-    # Bootstrap CIs at selected threshold
     boot_ci = bootstrap_metrics(y_test, y_prob, selected['threshold'],
                                  logger)
-    # Save bootstrap CIs as CSV
     pd.DataFrame([
         {'metric': k,
          'mean': v['mean'],
@@ -897,27 +958,19 @@ def main():
     ]).to_csv(TABLE_DIR / 'phase7_bootstrap_cis.csv', index=False)
     logger.info("Saved: phase7_bootstrap_cis.csv")
 
-    # ========================================================
     # 4. DCA
-    # ========================================================
     dca_df = compute_dca(y_test, y_prob, logger)
     make_dca_figure(dca_df, logger)
 
-    # ========================================================
     # 5. Calibration
-    # ========================================================
     cal_df, brier = compute_calibration(y_test, y_prob, logger)
     make_calibration_figure(cal_df, brier, logger)
 
-    # ========================================================
     # 6. Waterfall
-    # ========================================================
     make_waterfall(model, X_test, y_test, shap_values, expected_value,
                    logger)
 
-    # ========================================================
     # 7. Test predictions CSV
-    # ========================================================
     pred_df = pd.DataFrame({
         'stay_id': stay_ids_test,
         'y_true': y_test,
@@ -928,15 +981,11 @@ def main():
     pred_df.to_csv(TABLE_DIR / 'phase7_test_predictions.csv', index=False)
     logger.info("Saved: phase7_test_predictions.csv")
 
-    # ========================================================
     # 8. Report
-    # ========================================================
     save_report(importance, mask_importance, threshold_df, selected,
-                boot_ci, dca_df, cal_df, brier, test_metrics_05, logger)
+                boot_ci, dca_df, cal_df, brier, test_metrics_05, logger,
+                threshold_source=threshold_source)
 
-    # ========================================================
-    # Summary
-    # ========================================================
     elapsed = datetime.now() - t0
     print("\n" + "=" * 80)
     print(" PHASE 7 COMPLETED")
@@ -948,12 +997,13 @@ def main():
         print(f"   {row['rank']}. {row['feature']:40s} "
               f"{row['mean_abs_shap']:.4f}")
     print("-" * 80)
-    print(f" TOP MASKS BY SHAP:")
+    print(" TOP MASKS BY SHAP:")
     for _, row in mask_importance.head(5).iterrows():
         print(f"   {row['rank']}. {row['feature']:40s} "
               f"{row['mean_abs_shap']:.4f}")
     print("-" * 80)
-    print(f" SELECTED THRESHOLD: {selected['threshold']:.3f} "
+    print(f" SELECTED THRESHOLD (source={threshold_source}): "
+          f"{selected['threshold']:.3f} "
           f"(recall target={TARGET_RECALL}, selected by max F1)")
     print(f"   Recall:     {selected['recall']:.4f} "
           f"[{boot_ci['recall']['ci_lo']:.4f}, "
