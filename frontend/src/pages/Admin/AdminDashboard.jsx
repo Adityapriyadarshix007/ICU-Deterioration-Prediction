@@ -39,7 +39,7 @@ function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
       <AdminSidebar />
-      <div className="ml-64 p-8">
+      <div className="lg:ml-64 pt-14 lg:pt-0 p-4 md:p-6 lg:p-8">
         <Breadcrumb />
         <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
         

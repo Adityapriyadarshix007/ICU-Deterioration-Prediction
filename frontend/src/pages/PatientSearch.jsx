@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Search, Users, Activity, AlertTriangle, 
-  Plus, Filter, Download, Eye, 
+import {
+  Search, Users, Activity, AlertTriangle,
+  Plus, Filter, Download, Eye,
   Loader2, User, Calendar, Hospital,
   Stethoscope, Clock, ArrowRight, RefreshCw,
   X, Check, Trash2, Edit2, Eye as EyeIcon
@@ -41,13 +41,13 @@ function PatientSearch() {
     setLoading(true);
     try {
       console.log('🔍 Fetching patients with search:', searchTerm);
-      
+
       const response = await api.getPatients(searchTerm);
       console.log('📊 Patients API response:', response.data);
-      
+
       let patientData = [];
       let total = 0;
-      
+
       if (response.data) {
         if (Array.isArray(response.data)) {
           patientData = response.data;
@@ -56,25 +56,25 @@ function PatientSearch() {
           patientData = response.data.patients;
           total = response.data.total || patientData.length;
         } else {
-          patientData = Object.values(response.data).flat().filter(item => 
+          patientData = Object.values(response.data).flat().filter(item =>
             item && typeof item === 'object' && (item.patient_id || item.id)
           );
           total = patientData.length;
         }
       }
-      
+
       console.log(`✅ Found ${patientData.length} patients`);
-      console.log('📋 Patient risk levels:', patientData.map(p => ({ 
-        name: p.patient_name || p.name, 
-        risk: p.risk_level 
+      console.log('📋 Patient risk levels:', patientData.map(p => ({
+        name: p.patient_name || p.name,
+        risk: p.risk_level
       })));
-      
+
       setPatients(patientData);
       setTotalPatients(total);
-      
+
     } catch (error) {
       console.error('❌ Failed to load patients:', error);
-      
+
       if (error.response?.status === 401) {
         toast.error('Please login to view patients');
         navigate('/login');
@@ -172,7 +172,7 @@ function PatientSearch() {
 
   const handleDeletePatient = async (patient) => {
     if (!window.confirm(`Are you sure you want to delete ${patient.patient_name || patient.name}?`)) return;
-    
+
     try {
       const patientId = patient.patient_id || patient.id;
       await api.deletePatient(patientId);
@@ -199,7 +199,7 @@ function PatientSearch() {
   const handleExportCSV = async () => {
     try {
       toast.loading('Exporting patients...', { id: 'export' });
-      
+
       const headers = ['Patient ID', 'Name', 'Age', 'Gender', 'Room', 'Diagnosis', 'Risk Level', 'Status'];
       const rows = patients.map(p => [
         p.patient_id || p.id,
@@ -211,9 +211,9 @@ function PatientSearch() {
         p.risk_level || 'LOW',
         p.status || 'Active'
       ]);
-      
+
       const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-      
+
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -222,7 +222,7 @@ function PatientSearch() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
+
       toast.dismiss('export');
       toast.success(`Exported ${patients.length} patients`);
     } catch (error) {
@@ -232,42 +232,25 @@ function PatientSearch() {
     }
   };
 
-  // Filter patients based on exact risk levels from database
   const filteredPatients = patients.filter(patient => {
-    // Search filter
     const name = (patient.patient_name || patient.name || '').toLowerCase();
     const search = searchTerm.toLowerCase();
-    const matchesSearch = name.includes(search) || 
+    const matchesSearch = name.includes(search) ||
                          (patient.patient_id || patient.id || '').toLowerCase().includes(search);
-    
+
     if (!matchesSearch) return false;
-    
-    // Get risk level (exact match from database)
+
     const riskLevel = (patient.risk_level || 'LOW').toUpperCase();
-    
-    // Filter logic based on exact database values
+
     if (filter === 'all') return true;
-    
-    if (filter === 'low') {
-      return riskLevel === 'LOW';
-    }
-    
-    if (filter === 'medium') {
-      return riskLevel === 'MEDIUM';
-    }
-    
-    if (filter === 'high') {
-      return riskLevel === 'HIGH';
-    }
-    
-    if (filter === 'critical') {
-      return riskLevel === 'CRITICAL';
-    }
-    
+    if (filter === 'low') return riskLevel === 'LOW';
+    if (filter === 'medium') return riskLevel === 'MEDIUM';
+    if (filter === 'high') return riskLevel === 'HIGH';
+    if (filter === 'critical') return riskLevel === 'CRITICAL';
+
     return true;
   });
 
-  // Count patients by risk level
   const getRiskCount = (level) => {
     return patients.filter(p => {
       const risk = (p.risk_level || 'LOW').toUpperCase();
@@ -301,7 +284,7 @@ function PatientSearch() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 md:px-6 py-6 md:py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -316,8 +299,8 @@ function PatientSearch() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+      <div className="container mx-auto px-4 md:px-6 py-6 md:py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Patient Search</h1>
             <p className="text-gray-500">Find and manage patient records</p>
@@ -328,7 +311,7 @@ function PatientSearch() {
               </p>
             )}
           </div>
-          <div className="flex items-center gap-3 mt-4 md:mt-0">
+          <div className="flex items-center gap-3 flex-wrap">
             <Button variant="outline" size="sm" icon={RefreshCw} onClick={handleRefresh}>
               Refresh
             </Button>
@@ -344,7 +327,6 @@ function PatientSearch() {
           </div>
         </div>
 
-        {/* Search & Filter - Updated to match database levels */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
           <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -361,7 +343,7 @@ function PatientSearch() {
               <button
                 type="button"
                 onClick={() => handleFilterChange('all')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                className={`px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -370,7 +352,7 @@ function PatientSearch() {
               <button
                 type="button"
                 onClick={() => handleFilterChange('low')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                className={`px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   filter === 'low' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -379,7 +361,7 @@ function PatientSearch() {
               <button
                 type="button"
                 onClick={() => handleFilterChange('medium')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                className={`px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   filter === 'medium' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -388,7 +370,7 @@ function PatientSearch() {
               <button
                 type="button"
                 onClick={() => handleFilterChange('high')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                className={`px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   filter === 'high' ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -397,7 +379,7 @@ function PatientSearch() {
               <button
                 type="button"
                 onClick={() => handleFilterChange('critical')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                className={`px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   filter === 'critical' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -413,7 +395,6 @@ function PatientSearch() {
           </form>
         </div>
 
-        {/* Patient List - Clickable Rows */}
         <Card title={`Patients (${filteredPatients.length})`} icon={Users}>
           {filteredPatients.length === 0 ? (
             <div className="text-center py-12">
@@ -430,14 +411,14 @@ function PatientSearch() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Patient ID</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Name</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Age</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Gender</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Room</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Risk</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Status</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Actions</th>
+                    <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Patient ID</th>
+                    <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Name</th>
+                    <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Age</th>
+                    <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Gender</th>
+                    <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Room</th>
+                    <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Risk</th>
+                    <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Status</th>
+                    <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -450,30 +431,30 @@ function PatientSearch() {
                       className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors cursor-pointer group"
                       onClick={() => handleViewPatient(patient)}
                     >
-                      <td className="py-3 px-4 text-sm font-mono text-gray-600">
+                      <td className="py-3 px-3 md:px-4 text-sm font-mono text-gray-600">
                         {patient.patient_id || patient.id || 'N/A'}
                       </td>
-                      <td className="py-3 px-4 font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                      <td className="py-3 px-3 md:px-4 font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
                         {patient.patient_name || patient.name || 'Unknown'}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{patient.age || 'N/A'}</td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{patient.gender || 'N/A'}</td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{patient.room || 'N/A'}</td>
-                      <td className="py-3 px-4">
-                        <StatusBadge 
+                      <td className="py-3 px-3 md:px-4 text-sm text-gray-600">{patient.age || 'N/A'}</td>
+                      <td className="py-3 px-3 md:px-4 text-sm text-gray-600">{patient.gender || 'N/A'}</td>
+                      <td className="py-3 px-3 md:px-4 text-sm text-gray-600">{patient.room || 'N/A'}</td>
+                      <td className="py-3 px-3 md:px-4">
+                        <StatusBadge
                           status={getRiskBadge(patient.risk_level)}
                           label={getRiskLabel(patient.risk_level)}
                           size="sm"
                         />
                       </td>
-                      <td className="py-3 px-4">
-                        <StatusBadge 
+                      <td className="py-3 px-3 md:px-4">
+                        <StatusBadge
                           status={patient.status === 'Active' ? 'stable' : patient.status === 'Critical' ? 'critical' : 'warning'}
                           label={patient.status || 'Active'}
                           size="sm"
                         />
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-3 md:px-4">
                         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => handleViewPatient(patient)}
@@ -507,15 +488,14 @@ function PatientSearch() {
         </Card>
       </div>
 
-      {/* Add/Edit Patient Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 gap-2">
               <h2 className="text-xl font-bold text-gray-900">
                 {editingPatient ? 'Edit Patient' : 'Add New Patient'}
               </h2>
@@ -529,7 +509,7 @@ function PatientSearch() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <form onSubmit={editingPatient ? handleUpdatePatient : handleAddPatient}>
               <div className="space-y-4">
                 <div>
@@ -544,8 +524,8 @@ function PatientSearch() {
                     required
                   />
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4">
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Age <span className="text-red-500">*</span>
@@ -577,7 +557,7 @@ function PatientSearch() {
                     </select>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Diagnosis <span className="text-red-500">*</span>
@@ -590,8 +570,8 @@ function PatientSearch() {
                     required
                   />
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4">
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Room <span className="text-red-500">*</span>
@@ -621,7 +601,7 @@ function PatientSearch() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   type="button"

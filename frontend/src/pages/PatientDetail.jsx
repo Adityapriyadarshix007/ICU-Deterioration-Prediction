@@ -4,12 +4,12 @@ import Navbar from '../components/Navbar.jsx';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '../services/api';
-import { 
-  Activity, Heart, Brain, Droplet, Users, 
-  Calendar, Hospital, AlertTriangle, 
-  TrendingUp, TrendingDown, Clock, 
-  FileText, Stethoscope, Pill, 
-  ArrowLeft, Loader2, 
+import {
+  Activity, Heart, Brain, Droplet, Users,
+  Calendar, Hospital, AlertTriangle,
+  TrendingUp, TrendingDown, Clock,
+  FileText, Stethoscope, Pill,
+  ArrowLeft, Loader2,
   CheckCircle, XCircle, AlertCircle
 } from 'lucide-react';
 
@@ -27,9 +27,8 @@ function PatientDetail() {
   const loadPatientData = async () => {
     setLoading(true);
     try {
-      // Try to get patient data from the patients list
       let patientData = null;
-      
+
       try {
         const patientsResponse = await api.getPatients(id);
         if (patientsResponse.data) {
@@ -39,9 +38,8 @@ function PatientDetail() {
           } else if (patientsResponse.data.patients) {
             patients = patientsResponse.data.patients;
           }
-          
-          // Find patient by id or patient_id
-          const found = patients.find(p => 
+
+          const found = patients.find(p =>
             p.patient_id === id || p.id === id
           );
           if (found) {
@@ -52,7 +50,6 @@ function PatientDetail() {
         console.log('Could not fetch patient from list');
       }
 
-      // If no patient found, create mock data
       if (!patientData) {
         patientData = {
           id: id,
@@ -80,7 +77,6 @@ function PatientDetail() {
 
       setPatient(patientData);
 
-      // Get predictions for this patient
       try {
         const predictionsResponse = await api.getPatientPredictions(id);
         setPredictions(predictionsResponse.data || []);
@@ -92,8 +88,7 @@ function PatientDetail() {
     } catch (error) {
       console.error('Failed to load patient data:', error);
       toast.error('Failed to load patient data');
-      
-      // Set fallback data
+
       setPatient({
         id: id,
         patient_id: id,
@@ -181,8 +176,7 @@ function PatientDetail() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
+      <div className="container mx-auto px-4 md:px-6 py-6 md:py-8">
         <button
           onClick={() => navigate('/patients')}
           className="flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6 transition-colors"
@@ -192,7 +186,6 @@ function PatientDetail() {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Patient Info */}
           <div className="lg:col-span-1">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -200,23 +193,23 @@ function PatientDetail() {
               transition={{ duration: 0.3 }}
               className="bg-white p-6 rounded-xl shadow-lg border border-gray-100"
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
                 <h2 className="text-xl font-bold text-gray-900">Patient Information</h2>
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRiskColor(patient?.risk_level)}`}>
                   {patient?.risk_level || 'LOW'}
                 </span>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wide">Patient ID</p>
-                  <p className="font-mono text-sm font-medium text-gray-900">{patient?.patient_id || patient?.id}</p>
+                  <p className="font-mono text-sm font-medium text-gray-900 break-all">{patient?.patient_id || patient?.id}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wide">Name</p>
                   <p className="font-medium text-gray-900">{patient?.patient_name || patient?.name}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide">Age</p>
                     <p className="font-medium text-gray-900">{patient?.age} years</p>
@@ -242,9 +235,7 @@ function PatientDetail() {
             </motion.div>
           </div>
 
-          {/* Right Column - Vitals & Predictions */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Vitals Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -256,7 +247,7 @@ function PatientDetail() {
                 Current Vitals
               </h2>
               {patient?.vitals ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                   {Object.entries(patient.vitals).map(([key, value]) => {
                     const status = getVitalStatus(key, value);
                     const Icon = getVitalIcon(key);
@@ -295,11 +286,11 @@ function PatientDetail() {
                             </p>
                           </div>
                           <div className={`p-2 rounded-lg ${
-                            status === 'normal' ? 'bg-green-100' : 
+                            status === 'normal' ? 'bg-green-100' :
                             status === 'high' ? 'bg-red-100' : 'bg-yellow-100'
                           }`}>
                             <Icon className={`w-4 h-4 ${
-                              status === 'normal' ? 'text-green-600' : 
+                              status === 'normal' ? 'text-green-600' :
                               status === 'high' ? 'text-red-600' : 'text-yellow-600'
                             }`} />
                           </div>
@@ -320,7 +311,6 @@ function PatientDetail() {
               )}
             </motion.div>
 
-            {/* Predictions Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -334,9 +324,9 @@ function PatientDetail() {
               {predictions.length > 0 ? (
                 <div className="space-y-3">
                   {predictions.map((pred, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors">
-                      <div>
-                        <div className="flex items-center gap-3">
+                    <div key={idx} className="flex items-center justify-between gap-2 flex-wrap p-4 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                             pred.alert_level === 'CRITICAL' ? 'bg-red-100 text-red-800' :
                             pred.alert_level === 'WARNING' ? 'bg-yellow-100 text-yellow-800' :

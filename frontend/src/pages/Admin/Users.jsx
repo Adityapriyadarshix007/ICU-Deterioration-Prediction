@@ -168,7 +168,7 @@ function Users() {
   return (
     <div className="min-h-screen bg-gray-100">
       <AdminSidebar />
-      <div className="ml-64 p-8">
+      <div className="lg:ml-64 pt-14 lg:pt-0 p-4 md:p-6 lg:p-8">
         <Breadcrumb />
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -348,7 +348,7 @@ function Users() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between gap-2 flex-wrap mb-4">
               <h2 className="text-xl font-bold">Add New User</h2>
               <button
                 onClick={() => { setShowAddModal(false); resetForm(); }}

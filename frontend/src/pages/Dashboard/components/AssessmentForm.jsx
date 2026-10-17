@@ -66,7 +66,7 @@ const AssessmentForm = ({
         </div>
 
         {/* Patient Demographics - Age, Gender, Room, Diagnosis */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
           <div>
             <label htmlFor="patientAge" className="block text-sm font-medium text-gray-700 mb-1">
               Age <span className="text-red-500">*</span>
@@ -147,7 +147,7 @@ const AssessmentForm = ({
         {/* Vital Signs */}
         <div>
           <h4 className="text-sm font-medium text-gray-700 mb-3">Vital Signs</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {Object.entries(vitals).map(([key, value]) => {
               const range = CLINICAL_RANGES[key];
               if (!range) return null;

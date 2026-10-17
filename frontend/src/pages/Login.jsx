@@ -7,8 +7,8 @@ import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { useLoading } from '../context/LoadingContext';
 import api from '../services/api';
-import { 
-  Mail, Lock, User, Eye, EyeOff, 
+import {
+  Mail, Lock, User, Eye, EyeOff,
   ArrowRight, Activity, HeartPulse,
   ShieldCheck, Brain, Database,
   CheckCircle, Loader2, Key
@@ -18,7 +18,7 @@ import lockVideo from '../assets/lock.mp4';
 import unlockVideo from '../assets/unlock.mp4';
 
 const Particles = () => {
-  const particles = useMemo(() => 
+  const particles = useMemo(() =>
     Array.from({ length: 18 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
@@ -101,7 +101,6 @@ function Login() {
     }
   }, [controls, inView]);
 
-  // If already authenticated, redirect immediately
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard', { replace: true });
@@ -114,10 +113,8 @@ function Login() {
       ...prev,
       [name]: value
     }));
-    
+
     if (name === 'confirmPassword' || name === 'password') {
-      const password = name === 'password' ? value : formData.password;
-      const confirmPassword = name === 'confirmPassword' ? value : formData.confirmPassword;
       if (name === 'password') {
         setPasswordMatch(value === formData.confirmPassword);
       } else {
@@ -151,22 +148,22 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (isSignup) {
       if (formData.password !== formData.confirmPassword) {
         toast.error('Passwords do not match');
         return;
       }
-      
+
       const passwordError = validatePassword(formData.password);
       if (passwordError) {
         toast.error(passwordError);
         return;
       }
     }
-    
+
     setIsSubmitting(true);
-    
+
     showLoading({
       isSuccess: true,
       message: 'Authenticating...',
@@ -192,34 +189,32 @@ function Login() {
       }
 
       const response = await api.login(formData.username, formData.password);
-      
+
       updateLoading({
         isSuccess: true,
         message: 'Access Granted!',
         videoSrc: lockVideo,
         videoDuration: 4000
       });
-      
-      // Perform login
+
       await login(response.data.access_token);
-      
-      // Navigate immediately after login, no waiting for useEffect
+
       setTimeout(() => {
         hideLoading();
         navigate('/dashboard', { replace: true });
         setIsSubmitting(false);
       }, 4000);
-      
+
     } catch (error) {
       console.error('Login error:', error);
-      
+
       updateLoading({
         isSuccess: false,
         message: 'Access Denied',
         videoSrc: unlockVideo,
         videoDuration: 4000
       });
-      
+
       setTimeout(() => {
         hideLoading();
         toast.error(getErrorMessage(error));
@@ -230,43 +225,42 @@ function Login() {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     setIsSubmitting(true);
-    
+
     showLoading({
       isSuccess: true,
       message: 'Authenticating with Google...',
       videoSrc: lockVideo,
       videoDuration: 4000
     });
-    
+
     try {
       const response = await api.googleLogin(credentialResponse.credential);
-      
+
       updateLoading({
         isSuccess: true,
         message: 'Google Access Granted!',
         videoSrc: lockVideo,
         videoDuration: 4000
       });
-      
+
       await login(response.data.access_token);
-      
-      // Navigate immediately
+
       setTimeout(() => {
         hideLoading();
         navigate('/dashboard', { replace: true });
         setIsSubmitting(false);
       }, 4000);
-      
+
     } catch (error) {
       console.error('Google login error:', error);
-      
+
       updateLoading({
         isSuccess: false,
         message: 'Google Login Failed',
         videoSrc: unlockVideo,
         videoDuration: 4000
       });
-      
+
       setTimeout(() => {
         hideLoading();
         toast.error(getErrorMessage(error));
@@ -282,19 +276,17 @@ function Login() {
   const togglePasswordVisibility = () => setShowPassword(prev => !prev);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(prev => !prev);
 
-  // If loading screen is showing or already authenticated, render nothing
   if (isLoading || isAuthenticated) {
     return null;
   }
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-blue-50 via-white to-indigo-50 relative overflow-hidden">
-      {/* Left Panel - Hero Section */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 p-12 flex-col justify-between relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-700 to-blue-800 animate-gradient"></div>
         <Particles />
         <ECGLine />
-        
+
         <div className="relative z-10">
           <div className="flex items-center gap-2 text-white mb-8">
             <motion.div
@@ -308,7 +300,7 @@ function Login() {
               Research Prototype
             </span>
           </div>
-          
+
           <motion.div
             animate={{
               y: [0, -8, 0]
@@ -332,13 +324,13 @@ function Login() {
               />
             </div>
           </motion.div>
-          
+
           <div className="space-y-6 text-center">
             <h1 className="text-4xl font-bold text-white leading-tight">
               Early ICU Deterioration<br />
               <span className="text-blue-200">AI Prediction Platform</span>
             </h1>
-            
+
             <div className="space-y-3 text-left max-w-md mx-auto">
               {[
                 { icon: Brain, text: 'AI-Powered Clinical Decision Support', delay: 0.2 },
@@ -361,7 +353,7 @@ function Login() {
               ))}
             </div>
 
-            <motion.div 
+            <motion.div
               ref={ref}
               initial="hidden"
               animate={controls}
@@ -417,12 +409,11 @@ function Login() {
         </div>
       </div>
 
-      {/* Right Panel - Login Form */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full lg:w-1/2 flex items-center justify-center p-8 relative"
+        className="w-full lg:w-1/2 flex items-center justify-center p-4 md:p-8 relative"
       >
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 text-blue-600 mb-8">
@@ -444,7 +435,6 @@ function Login() {
             </p>
           </motion.div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignup && (
               <>

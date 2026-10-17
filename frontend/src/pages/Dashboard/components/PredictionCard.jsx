@@ -101,15 +101,17 @@ const PredictionCard = ({ prediction, onExport, onPrint }) => {
         icon={FileText}
         className={`border-l-8 ${getAlertColor(alertLevel)}`}
         actions={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" icon={Download} onClick={handleExportPDF}>
-              Export PDF
-            </Button>
-            <Button variant="outline" size="sm" icon={Printer} onClick={handlePrint}>
-              Print
-            </Button>
-          </div>
-        }
+  <div className="flex items-center gap-2 flex-wrap">
+    <Button variant="outline" size="sm" icon={Download} onClick={handleExportPDF}>
+      <span className="hidden sm:inline">Export PDF</span>
+      <span className="sm:hidden">PDF</span>
+    </Button>
+    <Button variant="outline" size="sm" icon={Printer} onClick={handlePrint}>
+      <span className="hidden sm:inline">Print</span>
+      <span className="sm:hidden">Print</span>
+    </Button>
+  </div>
+}
       >
         {/* Clinical Disclaimer */}
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">

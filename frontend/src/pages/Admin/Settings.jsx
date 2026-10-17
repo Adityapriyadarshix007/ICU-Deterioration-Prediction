@@ -96,7 +96,7 @@ function Settings() {
   return (
     <div className="min-h-screen bg-gray-100">
       <AdminSidebar />
-      <div className="ml-64 p-8">
+      <div className="lg:ml-64 pt-14 lg:pt-0 p-4 md:p-6 lg:p-8">
         <Breadcrumb />
         <div className="flex justify-between items-center mb-6">
           <div>

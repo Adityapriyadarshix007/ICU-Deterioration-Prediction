@@ -42,26 +42,26 @@ const SHAPExplanation = ({ shapValues }) => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+            className="p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
           >
-            <div className="flex items-center gap-3 flex-1">
-              <div className="p-1.5 rounded-lg" style={{ background: `${feature.color}20` }}>
-                <Icon className="w-4 h-4" style={{ color: feature.color }} />
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="p-1.5 rounded-lg flex-shrink-0" style={{ background: `${feature.color}20` }}>
+                  <Icon className="w-4 h-4" style={{ color: feature.color }} />
+                </div>
+                <span className="text-sm font-medium text-gray-700 truncate">{feature.label}</span>
               </div>
-              <span className="text-sm font-medium text-gray-700">{feature.label}</span>
-            </div>
-            <div className="flex items-center gap-3 flex-1">
-              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${percent}%` }}
-                  className={`h-full rounded-full ${isPositive ? 'bg-red-500' : 'bg-green-500'}`}
-                  transition={{ duration: 0.8, delay: index * 0.05 }}
-                />
-              </div>
-              <span className={`text-sm font-semibold w-14 text-right ${isPositive ? 'text-red-600' : 'text-green-600'}`}>
+              <span className={`text-sm font-semibold flex-shrink-0 ${isPositive ? 'text-red-600' : 'text-green-600'}`}>
                 {isPositive ? '↑' : '↓'} {percent}%
               </span>
+            </div>
+            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${percent}%` }}
+                className={`h-full rounded-full ${isPositive ? 'bg-red-500' : 'bg-green-500'}`}
+                transition={{ duration: 0.8, delay: index * 0.05 }}
+              />
             </div>
           </motion.div>
         );

@@ -4,8 +4,8 @@ import toast from 'react-hot-toast';
 import AdminSidebar from '../../components/AdminSidebar.jsx';
 import Breadcrumb from '../../components/Breadcrumb.jsx';
 import api from '../../services/api';
-import { 
-  BarChart3, TrendingUp, Users, Activity, Brain, 
+import {
+  BarChart3, TrendingUp, Users, Activity, Brain,
   Clock, Download, RefreshCw, AlertTriangle, User
 } from 'lucide-react';
 
@@ -32,27 +32,22 @@ function Analytics() {
     try {
       const response = await api.getOverview();
       const data = response.data || {};
-      
+
       console.log('📊 Analytics data received:', data);
-      
-      // ============================================================
-      // Read the correct structure from backend
-      // Backend returns: { users: {...}, predictions: {...}, risk_distribution: {...}, trends: [...] }
-      // ============================================================
+
       const predictions = data.predictions || {};
       const riskDistribution = data.risk_distribution || { LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0 };
       const trends = data.trends || [];
       const users = data.users || { total: 0, active: 0, admins: 0 };
       const recentPredictions = data.recent_predictions || [];
-      
-      // Ensure risk_distribution has all required keys
+
       const safeRiskDistribution = {
         LOW: riskDistribution.LOW || 0,
         MEDIUM: riskDistribution.MEDIUM || 0,
         HIGH: riskDistribution.HIGH || 0,
         CRITICAL: riskDistribution.CRITICAL || 0
       };
-      
+
       setAnalytics({
         total_predictions: predictions.total || 0,
         high_risk_patients: predictions.high_risk || 0,
@@ -63,25 +58,22 @@ function Analytics() {
         users: users,
         recent_predictions: recentPredictions
       });
-      
+
     } catch (error) {
       console.error('❌ Failed to load analytics:', error);
       toast.error('Failed to load analytics');
-      
+
       if (error.response?.status === 403) {
         navigate('/dashboard');
       }
-      
-      // ============================================================
-      // CRITICAL FIX: Better dummy data with proper dates and names
-      // ============================================================
+
       const now = new Date();
       const formatDate = (daysAgo) => {
         const date = new Date(now);
         date.setDate(date.getDate() - daysAgo);
         return date.toISOString().split('T')[0];
       };
-      
+
       setAnalytics({
         total_predictions: 156,
         high_risk_patients: 23,
@@ -105,7 +97,7 @@ function Analytics() {
             risk_score: 0.87,
             alert_level: "CRITICAL",
             username: "Dr. Smith",
-            created_at: new Date(now.getTime() - 5 * 60000).toISOString() // 5 minutes ago
+            created_at: new Date(now.getTime() - 5 * 60000).toISOString()
           },
           {
             patient_name: "Jane Smith",
@@ -113,7 +105,7 @@ function Analytics() {
             risk_score: 0.72,
             alert_level: "HIGH",
             username: "Dr. Johnson",
-            created_at: new Date(now.getTime() - 15 * 60000).toISOString() // 15 minutes ago
+            created_at: new Date(now.getTime() - 15 * 60000).toISOString()
           },
           {
             patient_name: "Robert Johnson",
@@ -121,7 +113,7 @@ function Analytics() {
             risk_score: 0.45,
             alert_level: "MEDIUM",
             username: "Dr. Williams",
-            created_at: new Date(now.getTime() - 30 * 60000).toISOString() // 30 minutes ago
+            created_at: new Date(now.getTime() - 30 * 60000).toISOString()
           },
           {
             patient_name: "Mary Wilson",
@@ -129,7 +121,7 @@ function Analytics() {
             risk_score: 0.25,
             alert_level: "LOW",
             username: "Dr. Brown",
-            created_at: new Date(now.getTime() - 60 * 60000).toISOString() // 1 hour ago
+            created_at: new Date(now.getTime() - 60 * 60000).toISOString()
           },
           {
             patient_name: "James Davis",
@@ -137,7 +129,7 @@ function Analytics() {
             risk_score: 0.91,
             alert_level: "CRITICAL",
             username: "Dr. Miller",
-            created_at: new Date(now.getTime() - 90 * 60000).toISOString() // 1.5 hours ago
+            created_at: new Date(now.getTime() - 90 * 60000).toISOString()
           }
         ]
       });
@@ -146,9 +138,6 @@ function Analytics() {
     }
   };
 
-  // ============================================================
-  // Helper function to format date properly
-  // ============================================================
   const formatDateDisplay = (dateString) => {
     if (!dateString) return 'N/A';
     try {
@@ -165,9 +154,6 @@ function Analytics() {
     }
   };
 
-  // ============================================================
-  // Helper function to format date for daily trends
-  // ============================================================
   const formatTrendDate = (dateString) => {
     if (!dateString) return 'N/A';
     try {
@@ -182,9 +168,6 @@ function Analytics() {
     }
   };
 
-  // ============================================================
-  // Get color for alert level
-  // ============================================================
   const getAlertColor = (level) => {
     const colors = {
       'CRITICAL': 'bg-red-100 text-red-800 border-red-200',
@@ -197,9 +180,6 @@ function Analytics() {
     return colors[level] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
-  // ============================================================
-  // Get risk score color
-  // ============================================================
   const getRiskColor = (score) => {
     if (score >= 0.7) return 'text-red-600';
     if (score >= 0.5) return 'text-orange-600';
@@ -222,14 +202,14 @@ function Analytics() {
   return (
     <div className="min-h-screen bg-gray-100">
       <AdminSidebar />
-      <div className="ml-64 p-8">
+      <div className="lg:ml-64 pt-14 lg:pt-0 p-4 md:p-6 lg:p-8">
         <Breadcrumb />
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
             <p className="text-sm text-gray-500">System performance and usage metrics</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <button
               onClick={loadAnalytics}
               className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
@@ -244,8 +224,7 @@ function Analytics() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl shadow">
             <div className="flex items-center justify-between">
               <div>
@@ -297,7 +276,6 @@ function Analytics() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Risk Distribution */}
           <div className="bg-white p-6 rounded-xl shadow">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-gray-500" />
@@ -319,9 +297,9 @@ function Analytics() {
                       <span className="text-gray-500">{count} patients ({percentage.toFixed(1)}%)</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div 
-                        className={`${colors[level] || 'bg-gray-400'} h-2.5 rounded-full transition-all duration-500`} 
-                        style={{ width: `${Math.min(percentage, 100)}%` }} 
+                      <div
+                        className={`${colors[level] || 'bg-gray-400'} h-2.5 rounded-full transition-all duration-500`}
+                        style={{ width: `${Math.min(percentage, 100)}%` }}
                       />
                     </div>
                   </div>
@@ -330,7 +308,6 @@ function Analytics() {
             </div>
           </div>
 
-          {/* Daily Trends */}
           <div className="bg-white p-6 rounded-xl shadow">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-gray-500" />
@@ -339,7 +316,7 @@ function Analytics() {
             <div className="space-y-3">
               {analytics.predictions_by_day && analytics.predictions_by_day.length > 0 ? (
                 analytics.predictions_by_day.slice(-7).map((day, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                  <div key={index} className="flex items-center justify-between gap-2 flex-wrap p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                     <span className="text-sm font-medium text-gray-700">{formatTrendDate(day.date)}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-blue-600">{day.count}</span>
@@ -356,8 +333,7 @@ function Analytics() {
           </div>
         </div>
 
-        {/* Recent Predictions - With Patient Names and Proper Dates */}
-        <div className="mt-6 bg-white p-6 rounded-xl shadow">
+        <div className="mt-6 bg-white p-4 md:p-6 rounded-xl shadow">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Clock className="w-5 h-5 text-gray-500" />
             Recent Predictions
@@ -366,18 +342,18 @@ function Analytics() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Patient</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Risk Score</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Alert Level</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Doctor</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Time</th>
+                  <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Patient</th>
+                  <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Risk Score</th>
+                  <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Alert Level</th>
+                  <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Doctor</th>
+                  <th className="text-left py-3 px-3 md:px-4 text-sm font-medium text-gray-500">Time</th>
                 </tr>
               </thead>
               <tbody>
                 {recentPredictions.length > 0 ? (
                   recentPredictions.slice(0, 10).map((prediction, index) => (
                     <tr key={index} className="border-b border-gray-100 hover:bg-gray-50 transition">
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-3 md:px-4">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-blue-100 rounded-full">
                             <User className="w-4 h-4 text-blue-600" />
@@ -388,20 +364,20 @@ function Analytics() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-3 md:px-4">
                         <span className={`font-semibold ${getRiskColor(prediction.risk_score || 0)}`}>
                           {((prediction.risk_score || 0) * 100).toFixed(1)}%
                         </span>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-3 md:px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getAlertColor(prediction.alert_level)}`}>
                           {prediction.alert_level || 'UNKNOWN'}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
+                      <td className="py-3 px-3 md:px-4 text-sm text-gray-600">
                         {prediction.username || prediction.user || 'System'}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-500">
+                      <td className="py-3 px-3 md:px-4 text-sm text-gray-500">
                         {formatDateDisplay(prediction.created_at)}
                       </td>
                     </tr>
@@ -422,13 +398,12 @@ function Analytics() {
           </div>
         </div>
 
-        {/* User Stats */}
         <div className="mt-6 bg-white p-6 rounded-xl shadow">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Users className="w-5 h-5 text-gray-500" />
             User Statistics
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <p className="text-2xl font-bold text-blue-600">{analytics.users?.total || 0}</p>
               <p className="text-sm text-gray-600">Total Users</p>
